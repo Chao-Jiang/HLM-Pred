@@ -24,6 +24,38 @@ The algorithm is able to accurately predict the future (like 17 frames later) ba
 
 ---
 
+**Single-Frame Prediction**:
+
+Input starting frame=1:
+
+![Input starting frame=1](https://github.com/CTTC/Ball-s-Position-Prediction-With-DL/blob/master/figures/test_single_1.png)
+
+Input starting frame=2:
+
+![Input starting frame=2](https://github.com/CTTC/Ball-s-Position-Prediction-With-DL/blob/master/figures/test_single_2.png)
+
+Input starting frame=3:
+
+![Input starting frame=3](https://github.com/CTTC/Ball-s-Position-Prediction-With-DL/blob/master/figures/test_single_3.png)
+
+
+**Multi-Frames Prediction**:
+
+Input starting frame=1:
+
+![Input starting frame=1](https://github.com/CTTC/Ball-s-Position-Prediction-With-DL/blob/master/figures/test_multi_1.png)
+
+Input starting frame=2:
+
+![Input starting frame=2](https://github.com/CTTC/Ball-s-Position-Prediction-With-DL/blob/master/figures/test_multi_2.png)
+
+Input starting frame=3:
+
+![Input starting frame=3](https://github.com/CTTC/Ball-s-Position-Prediction-With-DL/blob/master/figures/test_multi_3.png)
+
+
+---
+
 ## Package Requirements:
 * [TensorFlow 1.0](https://www.tensorflow.org/install/install_linux)
 ```bash
@@ -43,6 +75,11 @@ pip install scikit-learn
 ```bash
 cd scripts
 python main.py
+```
+
+Example:
+```bash
+python main.py -fd 4 --num_cells=2 -wd=0.00013 -sl=7 --keep_prob=0.75
 ```
 
 **Optional arguments** to pass in when run main.py

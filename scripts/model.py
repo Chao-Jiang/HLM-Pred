@@ -73,7 +73,7 @@ class Model(object):
                                                      name='time_dense_highway_%d' % idx)
                 # if idx % 8 == 0:
                 #     net = tl.layers.DropoutLayer(net, keep=self.args.keep_prob, name='highway_drop_%d' % idx)
-        net = tl.layers.DropoutLayer(net, keep=self.args.keep_prob, name='highway_drop')
+        # net = tl.layers.DropoutLayer(net, keep=self.args.keep_prob, name='highway_drop')
         with tf.variable_scope('fc2'):
             net = tl.layers.TimeDistributedLayer(net,
                                                  layer_class=tl.layers.DenseLayer,

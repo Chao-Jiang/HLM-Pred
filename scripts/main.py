@@ -33,14 +33,14 @@ def main():
     parser.add_argument('--num_mixtures', type=int, default=3, help='number of mixtures for MDN')
     parser.add_argument('--seq_length', '-sl', type=int, default=6, help='sequence length')
     parser.add_argument('--gaussian_dim', '-gd', type=int, default=3, help='dimentionality of gaussian distribution')
-    parser.add_argument('--features_dim', '-fd', type=int, default=3, help='dimentionality of input features')
+    parser.add_argument('--features_dim', '-fd', type=int, default=4, help='dimentionality of input features')
     parser.add_argument('--weight_decay', '-wd', type=float, default=0.005, help='scale factor of regularization of neural network')
     parser.add_argument('--learning_rate', '-lr', type=float, default=0.005, help='learning rate')
     parser.add_argument('--batch_size', type=int, default=128, help='minibatch size')
     parser.add_argument('--num_epochs', type=int, default=3000, help='number of epochs')
     parser.add_argument('--keep_prob', type=float, default=0.6, help='dropout keep probability')
     parser.add_argument('--grad_clip', type=float, default=10., help='clip gradients at this value')
-    parser.add_argument('--random_seed', type=int, default=0, help='random seed')
+    parser.add_argument('--random_seed', type=int, default=1, help='random seed')
     parser.add_argument('--ckpt_interval', type=int, default=800, help='checkpoint file save interval')
     parser.add_argument('--predicted_step', '-ps', type=int,
                         default=17, help='which time step after the '

@@ -216,14 +216,14 @@ class TrainConditions(object):
         if not args.test:
             self.model.fit(X_train, y_train)
         else:
-            train_num = X_test.shape[0]
-            find_best_ckpt(args,
-                           self.model,
-                           X_train[:train_num],
-                           y_train[:train_num],
-                           X_test,
-                           y_test,
-                           restore=False)
+            # train_num = X_test.shape[0]
+            # find_best_ckpt(args,
+            #                self.model,
+            #                X_train[:train_num],
+            #                y_train[:train_num],
+            #                X_test,
+            #                y_test,
+            #                restore=False)
             self.model.restore_model()
         # model.predict(X_test)
         print("\nTraining data testing\n---------------------")

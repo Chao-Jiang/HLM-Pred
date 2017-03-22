@@ -105,23 +105,27 @@ def plot_3d(points_list, title=None, draw_now=True, seq_length=None, start=0):
             ax.plot(points_list[0][idx, :, 0],
                     points_list[0][idx, :, 1],
                     points_list[0][idx, :, 2],
-                    'b-')
+                    'b-', label='input')
         else:
             import numbers
             assert isinstance(seq_length, numbers.Integral), 'Sequence length must be integer if provided'
-            if start > 0:
-                ax.plot(points_list[0][idx, 0: start+1, 0],
-                        points_list[0][idx, 0: start+1, 1],
-                        points_list[0][idx, 0: start+1, 2],
-                        'm-', linewidth=1)
+            # if start > 0:
+            #     ax.plot(points_list[0][idx, 0: start+1, 0],
+            #             points_list[0][idx, 0: start+1, 1],
+            #             points_list[0][idx, 0: start+1, 2],
+            #             'm-', linewidth=1, label='true_trajectory')
+            ax.plot(points_list[0][idx, :, 0],
+                    points_list[0][idx, :, 1],
+                    points_list[0][idx, :, 2],
+                    'm-', linewidth=1, label='true_trajectory')
             ax.plot(points_list[0][idx, start: start+seq_length, 0],
                     points_list[0][idx, start: start+seq_length, 1],
                     points_list[0][idx, start: start+seq_length, 2],
-                    'b-', linewidth=1)
-            ax.plot(points_list[0][idx, start+seq_length-1:, 0],
-                    points_list[0][idx, start+seq_length-1:, 1],
-                    points_list[0][idx, start+seq_length-1:, 2],
-                    'm-', linewidth=1)
+                    'b-', linewidth=1, label='input')
+            # ax.plot(points_list[0][idx, start+seq_length-1:, 0],
+            #         points_list[0][idx, start+seq_length-1:, 1],
+            #         points_list[0][idx, start+seq_length-1:, 2],
+            #         'm-', linewidth=1, label='true_trajectory')
         ax.scatter(points_list[0][idx, :, 0],
                    points_list[0][idx, :, 1],
                    points_list[0][idx, :, 2],
@@ -140,12 +144,23 @@ def plot_3d(points_list, title=None, draw_now=True, seq_length=None, start=0):
         ax.set_xticks([])
         ax.set_yticks([])
         ax.set_zticks([])
-    if len(points_list) == 2:
-        ax.scatter(points_list[1][:, 0],
-                   points_list[1][:, 1],
-                   points_list[1][:, 2],
-                   c='k', marker='x',
-                   label='prediction')
+        if len(points_list) == 2:
+            if len(points_list[1].shape) == 2:
+                ax.scatter(points_list[1][idx, 0],
+                           points_list[1][idx, 1],
+                           points_list[1][idx, 2],
+                           c='k', marker='x',
+                           label='prediction')
+            elif len(points_list[1].shape) == 3:
+                ax.scatter(points_list[1][idx, :, 0],
+                           points_list[1][idx, :, 1],
+                           points_list[1][idx, :, 2],
+                           c='k', marker='x',
+                           label='prediction')
+                ax.plot(points_list[1][idx, :, 0],
+                        points_list[1][idx, :, 1],
+                        points_list[1][idx, :, 2],
+                        'kx-', linewidth=1)
     ax.legend(ncol=1, prop={'size': 12})
     ax.set_xlabel('X Label')
     ax.set_ylabel('Y Label')
@@ -639,7 +654,7 @@ def find_best_ckpt(args, model, X_train, y_train, X_test, y_test, restore=False)
     max_ckpt = ckpt.model_checkpoint_path
     max_ckpt_idx = int(max_ckpt.split('-')[-1])
     filename = os.path.join(model.ckpt_dir, 'error_stats.csv')
-    start = 110400#args.ckpt_interval
+    start = 64800#args.ckpt_interval
     if not restore:
         if os.path.exists(filename):
             os.remove(filename)
