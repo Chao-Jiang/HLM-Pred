@@ -188,14 +188,14 @@ optional arguments:
 
 ## Training Result:
 
-Single frame prediction: given 7 initial camera frames, predict the position of table tennis ball in the 17th frame starting from the last frame (the 7th frame input), i.e., the ball's position in the 24th (7 + 17) frame
+**Single frame prediction**: given 7 initial camera frames, predict the position of table tennis ball in the 17th frame starting from the last frame (the 7th frame input), i.e., the ball's position in the 24th (7 + 17) frame
 ```bash
 # Percentage of testing with distance less than 0.010m is: 42.00 %
 # Percentage of testing with distance less than 0.020m is: 79.17 %
 # Percentage of testing with distance less than 0.030m is: 93.33 %
 ```
 
-Multiple frames prediction: given 7 initial camera frames, predict the position of table tennis ball in the 13th to the 17th frames starting from the last frame (the 7th frame input), i.e., the ball's position in the 20th to 24th frame
+**Multiple frames prediction**: given 7 initial camera frames, predict the position of table tennis ball in the 13th to the 17th frames starting from the last frame (the 7th frame input), i.e., the ball's position in the 20th to 24th frame
 
 13th frame：
 ```bash
