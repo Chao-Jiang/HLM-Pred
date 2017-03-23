@@ -8,6 +8,7 @@ import tensorflow as tf
 import json
 import time
 import cv2
+import re
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import axes3d
 import tensorlayer as tl
@@ -653,11 +654,22 @@ def find_best_ckpt(args, model, X_train, y_train, X_test, y_test, restore=False)
     ckpt = tf.train.get_checkpoint_state(model.ckpt_dir)
     max_ckpt = ckpt.model_checkpoint_path
     max_ckpt_idx = int(max_ckpt.split('-')[-1])
-    filename = os.path.join(model.ckpt_dir, 'error_stats.csv')
-    start = 64800#args.ckpt_interval
+    error_filename = os.path.join(model.ckpt_dir, 'error_stats.csv')
+    files_lst = os.listdir(model.ckpt_dir)
+    min_index = max_ckpt_idx
+    for filename in files_lst:
+        if 'tfevents' in filename or 'ckpt' not in filename:
+            continue
+        fileindex_list = re.findall(r'\d+', filename)
+        if not fileindex_list:
+            continue
+        fileindex = int(fileindex_list[0])
+        if fileindex <= min_index:
+            min_index = fileindex
+    start = min_index
     if not restore:
-        if os.path.exists(filename):
-            os.remove(filename)
+        if os.path.exists(error_filename):
+            os.remove(error_filename)
         for step in xrange(start, max_ckpt_idx + 1, args.ckpt_interval):
             model.restore_model(step=step)
             print("\nTraining data testing, Ckpt %d\n---------------------" % step)
@@ -673,7 +685,7 @@ def find_best_ckpt(args, model, X_train, y_train, X_test, y_test, restore=False)
                                          draw=False,
                                          save_to_file=True)
 
-    df = pd.read_csv(filename, header=None)
+    df = pd.read_csv(error_filename, header=None)
     train_errors = df.values[::2]
     test_errors = df.values[1::2]
     x_ticks = range(start,

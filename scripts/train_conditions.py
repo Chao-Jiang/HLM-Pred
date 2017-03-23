@@ -1,11 +1,10 @@
 import numpy as np
 import rospy
-from functools import partial
-from model import Model
-from multiframe_model import MultiFrameModel
+from Model_SF import Model_SF
+from Model_MF import Model_MF
 from pingpang_control.srv import *
 from sklearn.model_selection import train_test_split
-from utility import build_toy_dataset, featurewise_minmax, \
+from utility import build_toy_dataset, \
     get_coordinates, plot_3d, get_left_right_center_pixel, find_best_ckpt
 
 class TrainConditions(object):
@@ -22,11 +21,12 @@ class TrainConditions(object):
                   conditions[4]: self._center_pixel_input_multiframe_output}
         self.func = config[args.train_condition]
         self.args = args
-        if args.train_condition == conditions[4]:
-            args.pred_frames_num = 5
-            self.model = MultiFrameModel(args)
+        if args.train_condition == 'multiframe_pred':
+            self.model = Model_MF(args)
+        elif args.train_condition == 'real_time_play' and args.multi_pred:
+            self.model = Model_MF(args)
         else:
-            self.model = Model(args)
+            self.model = Model_SF(args)
 
 
     def run(self):
@@ -59,79 +59,6 @@ class TrainConditions(object):
         # model.predict(X_test)
         y_preds, _ = self.model.test(X_test, y_test)
         plot_3d([X_test, y_preds])
-
-
-    def  _pixel_to_coordinate(self, args):
-        def print_stats(distances):
-            from scipy import stats
-            n, min_max, mean, var, skew, kurt = stats.describe(distances)
-            median = np.median(distances)
-            first_quartile = np.percentile(distances, 25)
-            third_quartile = np.percentile(distances, 75)
-            print('\nDistances statistics:')
-            print("Minimum: {0:9.4f} Maximum: {1:9.4f}".format(min_max[0], min_max[1]))
-            print("Mean: {0:9.4f}".format(mean))
-            print("Variance: {0:9.4f}".format(var))
-            print("Median: {0:9.4f}".format(median))
-            print("First quartile: {0:9.4f}".format(first_quartile))
-            print("Third quartile: {0:9.4f}".format(third_quartile))
-            threshold = 0.01
-            percentage_thr = (distances <= threshold).sum() / float(distances.size) * 100.0
-            percentage_double_thr = (distances <= 2 * threshold).sum() / float(distances.size) * 100.0
-            percentage_triple_thr = (distances <= 3 * threshold).sum() / float(distances.size) * 100.0
-            print("Percentage of testing with distance less than {0:.3f}m is: {1:4.2f} %".format(threshold,
-                                                                                                 percentage_thr))
-            print("Percentage of testing with distance less than {0:.3f}m is: {1:4.2f} %".format(2 * threshold,
-                                                                                                 percentage_double_thr))
-            print("Percentage of testing with distance less than {0:.3f}m is: {1:4.2f} %".format(3 * threshold,
-                                                                                                 percentage_triple_thr))
-
-        features, coords, labels = get_left_right_center_pixel(args, restore=True, save=True)
-        features = features.reshape(-1, 4)
-        coords = coords.reshape(-1, 3)
-        features_train, features_test, coords_train, coords_test = train_test_split(features, coords, test_size=0.1)
-        print("Traning data groups: %d" % features_train.shape[0])
-        print("Testing data groups: %d" % features_test.shape[0])
-
-        from sklearn.tree import DecisionTreeRegressor
-        from sklearn.model_selection import RandomizedSearchCV
-        from sklearn.ensemble import AdaBoostRegressor
-        # Utility function to report best scores
-        def report(results, n_top=3):
-            for i in range(1, n_top + 1):
-                candidates = np.flatnonzero(results['rank_test_score'] == i)
-                for candidate in candidates:
-                    print("Model with rank: {0}".format(i))
-                    print("Mean validation score: {0:.3f} (std: {1:.3f})".format(
-                        results['mean_test_score'][candidate],
-                        results['std_test_score'][candidate]))
-                    print("Parameters: {0}".format(results['params'][candidate]))
-                    print("")
-
-
-        regr = DecisionTreeRegressor(max_depth=2)
-        param_dist = {"max_depth": np.random.randint(3, 20),
-                      "max_features": np.random.randint(1, 5),
-                      "min_samples_split": np.random.randint(1, 20),
-                      "min_samples_leaf": np.random.randint(1, 20)}
-        # run randomized search
-        n_iter_search = 100
-        random_search = RandomizedSearchCV(regr, param_distributions=param_dist,
-                                           n_iter=n_iter_search)
-        import time
-        start = time.time()
-        random_search.fit(features_train, coords_train)
-        print("RandomizedSearchCV took %.2f seconds for %d candidates"
-              " parameter settings." % ((time.time() - start), n_iter_search))
-        report(random_search.cv_results_)
-        test_pred = random_search.predict(features_test)
-        euc_dist = np.linalg.norm(test_pred-coords_test, axis=1)
-        print_stats(euc_dist)
-
-        from sklearn.externals import joblib
-        filename = './regressor.joblib.pkl'
-        joblib.dump(random_search, filename, compress=9)
-
 
     def _coordinate_input_train(self, args):
         features, labels = get_coordinates(args)
@@ -170,23 +97,28 @@ class TrainConditions(object):
                  test_y_preds[start:start + draw_num]],
                 title='Test', draw_now=True, seq_length=args.seq_length)
 
+
     def _predict(self, pixel_centers):
         pixel_centers = np.asarray(pixel_centers.inputs).reshape(self.model.args.seq_length, self.model.args.features_dim)
         assert len(pixel_centers.shape) == 2, 'Request from client should contain two-dimensional data'
         assert pixel_centers.shape[0] == self.model.args.seq_length, \
             'Sequence length %d received does not match that in neural network' % pixel_centers.shape[0]
         y_preds = self.model.predict(np.expand_dims(pixel_centers, axis=0))
-        outputs = np.zeros(4)
-        outputs[:3] = y_preds[0]
-        outputs[3] = self.model.args.predicted_step
+        if isinstance(self.model, Model_SF):
+            pred_num = self.args.gaussian_dim
+        else:
+            pred_num = self.args.pred_frames_num * self.args.gaussian_dim
+        outputs = np.zeros(pred_num + 1)
+        outputs[:pred_num] = y_preds[0].reshape(-1)
+        outputs[pred_num] = self.model.args.predicted_step
         return Table_TennisResponse(outputs.tolist())
+
 
     def _real_time_play(self, args):
         self.model.restore_model()
         rospy.init_node('Real_time_playing')
         rospy.Service('prediction_interface', Table_Tennis, self._predict)
         rospy.spin()
-
 
 
     def _center_pixel_input_train(self, args):
@@ -216,14 +148,14 @@ class TrainConditions(object):
         if not args.test:
             self.model.fit(X_train, y_train)
         else:
-            # train_num = X_test.shape[0]
-            # find_best_ckpt(args,
-            #                self.model,
-            #                X_train[:train_num],
-            #                y_train[:train_num],
-            #                X_test,
-            #                y_test,
-            #                restore=False)
+            train_num = X_test.shape[0]
+            find_best_ckpt(args,
+                           self.model,
+                           X_train[:train_num],
+                           y_train[:train_num],
+                           X_test,
+                           y_test,
+                           restore=False)
             self.model.restore_model()
         # model.predict(X_test)
         print("\nTraining data testing\n---------------------")
@@ -285,9 +217,9 @@ class TrainConditions(object):
             self.model.restore_model()
         # model.predict(X_test)
         print("\nTraining data testing\n---------------------")
-        train_y_preds, _ = self.model.test(X_train, y_train, name='Train')
+        train_y_preds, _ = self.model.test(X_train, y_train, draw=False, name='Train')
         print("\nTesting data testing\n---------------------")
-        test_y_preds, _ = self.model.test(X_test, y_test, name='Test')
+        test_y_preds, _ = self.model.test(X_test, y_test, draw=False, name='Test')
         draw_num = 2
         start = np.random.randint(0, coords_test.shape[0] - draw_num)
         for i in xrange(len(start_steps)):
