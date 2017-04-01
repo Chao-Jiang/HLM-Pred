@@ -45,17 +45,17 @@ def main():
     parser.add_argument('--learning_rate', '-lr', type=float, default=0.005,
                         help='learning rate')
     parser.add_argument('--batch_size', type=int, default=128, help='minibatch size')
-    parser.add_argument('--num_epochs', type=int, default=3000, help='number of epochs')
+    parser.add_argument('--num_epochs', type=int, default=300, help='number of epochs')
     parser.add_argument('--keep_prob', type=float, default=0.6, help='dropout keep probability')
     parser.add_argument('--grad_clip', type=float, default=10., help='clip gradients at this value')
     parser.add_argument('--random_seed', type=int, default=1, help='random seed')
-    parser.add_argument('--ckpt_interval', type=int, default=800,
+    parser.add_argument('--ckpt_interval', type=int, default=500,
                         help='checkpoint file save interval')
     parser.add_argument('--predicted_step', '-ps', type=int,
-                        default=17, help='which time step after the '
+                        default=33, help='which time step after the '
                                          'last sequence input to make prediction ')
     parser.add_argument('--pred_frames_num', '-pfn', type=int,
-                        default=5, help='if predicting multiple frames, how many frames to predict')
+                        default=8, help='if predicting multiple frames, how many frames to predict')
     parser.add_argument('--multi_pred', '-md', action='store_true',
                         help='if in real_time_play mode, choose whether to '
                              'predict single frame or multiple frames')

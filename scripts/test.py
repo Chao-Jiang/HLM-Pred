@@ -61,25 +61,34 @@
 #     if k == 27:
 #         break
 #
-import rospy
-import time
-import numpy as np
-from pingpang_control.srv import *
-if __name__ == "__main__":
-    rospy.init_node('request_hitting_pos')
-    a = np.random.randint(0, 6, (6, 4))
-    rospy.wait_for_service('prediction_interface')
-    start = time.time()
-    try:
-        prediction = rospy.ServiceProxy('prediction_interface', Table_Tennis)
-        b = Table_TennisRequest()
-        b.inputs = a.reshape(-1)
-        resp = prediction(b)
-        print(resp)
-        end = time.time()
-        print('elapsed time:', end-start)
-    except rospy.ServiceException, e:
-        print "Service call failed: %s" % e
+# import rospy
+# import time
+# import numpy as np
+# from pingpang_control.srv import *
+# if __name__ == "__main__":
+#     rospy.init_node('request_hitting_pos')
+#     a = np.random.randint(0, 6, (6, 4))
+#     rospy.wait_for_service('prediction_interface')
+#     start = time.time()
+#     try:
+#         prediction = rospy.ServiceProxy('prediction_interface', Table_Tennis)
+#         b = Table_TennisRequest()
+#         b.inputs = a.reshape(-1)
+#         resp = prediction(b)
+#         print(resp)
+#         end = time.time()
+#         print('elapsed time:', end-start)
+#     except rospy.ServiceException, e:
+#         print "Service call failed: %s" % e
 
+import json
+import cPickle
+
+filename = '/home/chentao/HLM-Pred2/train/data/processed_data/c_pixel/train_test/c_pixel_test.json'
+with open(filename, 'r') as f:
+    data = json.load(f)
+
+with open(filename.replace('json', 'cpickle'), 'w+') as f:
+    cPickle.dump(data, f, protocol=cPickle.HIGHEST_PROTOCOL)
 
 

@@ -28,30 +28,30 @@ The algorithm is able to accurately predict the future (like 17 frames later) ba
 
 Input starting frame=1:
 
-![Input starting frame=1](https://github.com/CTTC/Ball-s-Position-Prediction-With-DL/blob/master/figures/test_single_1.png)
+![Input starting frame=1](figures/test_single_1.png)
 
 Input starting frame=2:
 
-![Input starting frame=2](https://github.com/CTTC/Ball-s-Position-Prediction-With-DL/blob/master/figures/test_single_2.png)
+![Input starting frame=2](figures/test_single_2.png)
 
 Input starting frame=3:
 
-![Input starting frame=3](https://github.com/CTTC/Ball-s-Position-Prediction-With-DL/blob/master/figures/test_single_3.png)
+![Input starting frame=3](figures/test_single_3.png)
 
 
 **Multi-Frames Prediction**:
 
 Input starting frame=1:
 
-![Input starting frame=1](https://github.com/CTTC/Ball-s-Position-Prediction-With-DL/blob/master/figures/test_multi_1.png)
+![Input starting frame=1](figures/test_multi_1.png)
 
 Input starting frame=2:
 
-![Input starting frame=2](https://github.com/CTTC/Ball-s-Position-Prediction-With-DL/blob/master/figures/test_multi_2.png)
+![Input starting frame=2](figures/test_multi_2.png)
 
 Input starting frame=3:
 
-![Input starting frame=3](https://github.com/CTTC/Ball-s-Position-Prediction-With-DL/blob/master/figures/test_multi_3.png)
+![Input starting frame=3](figures/test_multi_3.png)
 
 
 ---
@@ -71,47 +71,75 @@ pip install git+https://github.com/zsdonghao/tensorlayer.git
 pip install scikit-learn
 ```
 
+---
+
 ## Run
 ```bash
 cd scripts
 python main.py
 ```
 
-### Example:
-
 **Single frame prediction training**:
 ```bash
-python main.py -fd 4 --num_cells=2 -wd=0.00013 -sl=7 --keep_prob=0.75
+python main.py -fd 4 --num_cells=2 -wd=0.00013 -sl=14 --keep_prob=0.75
 ```
 
 **Testing**:
 ```bash
-python main.py -fd 4 --num_cells=2 -wd=0.00013 -sl=7 --keep_prob=0.75 --test
+python main.py -fd 4 --num_cells=2 -wd=0.00013 -sl=14 --keep_prob=0.75 --test
 ```
 
 **Multiple frames prediction training**:
 ```bash
-python main.py --train_condition=multiframe_pred -fd=4 --num_cells=2 -wd=0.00013 -sl=7 --keep_prob=0.75
+python main.py --train_condition=multiframe_pred -fd=4 --num_cells=2 -wd=0.00013 -sl=14 --keep_prob=0.75
 ```
 
 **Testing**:
 ```bash
-python main.py --train_condition=multiframe_pred -fd=4 --num_cells=2 -wd=0.00013 -sl=7 --keep_prob=0.75 --test
+python main.py --train_condition=multiframe_pred -fd=4 --num_cells=2 -wd=0.00013 -sl=14 --keep_prob=0.75 --test
 ```
 
-**To Control UR robot**:
+### Control UR robot
+
+First, compile UR ROS package:
+```bash
+cd <path_to_HLM-Pred>/pingpong-simulation
+catkin_make
+```
+Put `ping_pong_ball` and `table` folders in `model` folder into `~/.gazebo/models`.
+
+Also, change the computer name in `pingpong-simulation/src/pingpang_gazebo/worlds/table_tennis.world`: `[<uri>file:///home/...]`
+
+```bash
+gedit ~/.bashrc
+```
+Add `source <path_to_HLM-Pred>/pingpong-simulation/devel/setup.bash` to the end of `bashrc`
+
+To launch the table tennis environment, run:
+```bash
+roslaunch pingpang_gazebo pingpang_AI.launch
+```
+
+Then, run the prediction script in `<path_to_HLM-Pred>/scripts`
 
 **Single frame prediction**:
 ```bash
-python main.py --train_condition=real_time_play -fd 4 --num_cells=2 -wd=0.00013 -sl=7 --keep_prob=0.75
+cd <path_to_HLM-Pred>/scripts/
+python main.py --train_condition=real_time_play -fd 4 --num_cells=2 -wd=0.00013 -sl=14 --keep_prob=0.75
 ```
 
 **Multiple frame prediction**:
 ```bash
-python main.py --train_condition=real_time_play -fd=4 --num_cells=2 -wd=0.00013 -sl=7 --keep_prob=0.75 -md
+python main.py --train_condition=real_time_play -fd=4 --num_cells=2 -wd=0.00013 -sl=14 --keep_prob=0.75 -md
 ```
 
 These are just example usages, modify the arguments according to your own needs.
+
+After this, make UR robot play table tennis by running:
+```bash
+cd <path_to_HLM-Pred>/pingpong-simulation/src/pingpang_control/scripts
+python play_table_tennis.py
+```
 
 
 ## Optional arguments to pass in when run main.py
@@ -188,53 +216,75 @@ optional arguments:
 
 ## Training Result:
 
-**Single frame prediction**: given 7 initial camera frames, predict the position of table tennis ball in the 17th frame starting from the last frame (the 7th frame input), i.e., the ball's position in the 24th (7 + 17) frame
+**Single frame prediction**: given 14 initial camera frames, predict the position of table tennis ball in the 33th frame starting from the last frame (the 14th frame input), i.e., the ball's position in the 47th (14 + 33) frame
 ```bash
-# Percentage of testing with distance less than 0.010m is: 42.00 %
-# Percentage of testing with distance less than 0.020m is: 79.17 %
-# Percentage of testing with distance less than 0.030m is: 93.33 %
+Percentage of testing with distance less than 0.010m is: 39.23 %
+Percentage of testing with distance less than 0.020m is: 77.08 %
+Percentage of testing with distance less than 0.030m is: 92.17 %
 ```
 
-**Multiple frames prediction**: given 7 initial camera frames, predict the position of table tennis ball in the 13th to the 17th frames starting from the last frame (the 7th frame input), i.e., the ball's position in the 20th to 24th frame
+**Multiple frames prediction**: given 14 initial camera frames, predict the position of table tennis ball in the 26th to the 33th frames starting from the last frame (the 14th frame input), i.e., the ball's position in the 40th to 47th frame
 
-13th frame：
+26th frame：
 ```bash
-# Time step 0 Distances statistics:
-# Percentage with distance less than 0.015m is: 71.17 %
-# Percentage with distance less than 0.030m is: 92.83 %
-# Percentage with distance less than 0.045m is: 95.83 %
+Time step 0 Distances statistics:
+Percentage with distance less than 0.010m is: 61.10 %
+Percentage with distance less than 0.020m is: 92.33 %
+Percentage with distance less than 0.030m is: 98.73 %
 ```
 
-14th frame：
+27th frame：
 ```bash
-# Time step 1 Distances statistics:
-# Percentage with distance less than 0.015m is: 69.83 %
-# Percentage with distance less than 0.030m is: 90.67 %
-# Percentage with distance less than 0.045m is: 95.17 %
+Time step 1 Distances statistics:
+Percentage with distance less than 0.010m is: 59.94 %
+Percentage with distance less than 0.020m is: 91.72 %
+Percentage with distance less than 0.030m is: 98.52 %
 ```
 
-15th frame：
+28th frame：
 ```bash
-# Time step 2 Distances statistics:
-# Percentage with distance less than 0.015m is: 66.33 %
-# Percentage with distance less than 0.030m is: 89.33 %
-# Percentage with distance less than 0.045m is: 94.83 %
+Time step 2 Distances statistics:
+Percentage with distance less than 0.010m is: 57.60 %
+Percentage with distance less than 0.020m is: 90.22 %
+Percentage with distance less than 0.030m is: 98.30 %
 ```
 
-16th frame：
+29th frame：
 ```bash
-# Time step 3 Distances statistics:
-# Percentage with distance less than 0.015m is: 60.67 %
-# Percentage with distance less than 0.030m is: 88.17 %
-# Percentage with distance less than 0.045m is: 94.83 %
+Time step 3 Distances statistics:
+Percentage with distance less than 0.010m is: 55.55 %
+Percentage with distance less than 0.020m is: 88.38 %
+Percentage with distance less than 0.030m is: 97.59 %
 ```
 
-17th frame：
+30th frame：
 ```bash
-# Time step 4 Distances statistics:
-# Percentage with distance less than 0.015m is: 51.00 %
-# Percentage with distance less than 0.030m is: 84.17 %
-# Percentage with distance less than 0.045m is: 94.00 %
+Time step 4 Distances statistics:
+Percentage with distance less than 0.010m is: 53.26 %
+Percentage with distance less than 0.020m is: 84.98 %
+Percentage with distance less than 0.030m is: 96.10 %
 ```
 
-Note: The camera takes images at **15 Hz** and the table tennis ball flies about 15cm in 1 / 15 = 0.067s. So it only takes about 1 / 15 / 5 = **0.013s** for the table tennis ball to fly about 3cm. That's to say, this neural network can **accurately** predict the ball's position with **time accuracy = 0.013 s**, which is accurately enough for robot to capture the ball.
+31th frame：
+```bash
+Time step 5 Distances statistics:
+Percentage with distance less than 0.010m is: 49.48 %
+Percentage with distance less than 0.020m is: 82.52 %
+Percentage with distance less than 0.030m is: 95.30 %
+```
+
+32th frame：
+```bash
+Time step 6 Distances statistics:
+Percentage with distance less than 0.010m is: 46.00 %
+Percentage with distance less than 0.020m is: 79.10 %
+Percentage with distance less than 0.030m is: 93.19 %
+```
+
+33th frame：
+```bash
+Time step 7 Distances statistics:
+Percentage with distance less than 0.010m is: 45.26 %
+Percentage with distance less than 0.020m is: 76.33 %
+Percentage with distance less than 0.030m is: 90.95 %
+```

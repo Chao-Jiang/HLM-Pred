@@ -105,7 +105,7 @@ class Model(object):
                 from sklearn.model_selection import train_test_split
                 X_train, X_eval, y_train, y_eval = train_test_split(X_train,
                                                                     y_train,
-                                                                    test_size=0.02,
+                                                                    test_size=0.015,
                                                                     random_state=self.args.random_seed)
             else:
                 raise Exception('X_eval and y_eval should be both provided or neither of them should be provided')

@@ -1,0 +1,91 @@
+<?xml version="1.0"?>
+
+<robot name="ur10_robot" xmlns:xacro="http://www.ros.org/wiki/xacro">
+  
+  <xacro:include filename="$(find pingpang_gazebo)/urdf/accessories/stereo_camera.urdf.xacro"/> 
+
+  <xacro:include filename="$(find ur_description)/urdf/common.gazebo.xacro" />
+
+   <xacro:include filename="$(find ur_description)/urdf/ur10.urdf.xacro" />
+
+   <xacro:ur10_robot prefix="" joint_limited="false"/>
+
+  <link name="world"/>
+
+  <joint name="world_joint" type="fixed">
+    <origin xyz="1.40 3.2 0.25" rpy="0.0 0.0 3.14159" />
+    <parent link="world" />
+    <child link = "base_link"/>
+  </joint>
+  <!-- Degree-to-radian conversions -->
+  <xacro:property name="degrees_45" value="0.785398163"/>
+  <xacro:property name="degrees_90" value="1.57079633"/>
+  
+  <xacro:property name="M_PI" value="3.14159"/>
+
+  <xacro:property name="BASE_LINE" value="0.4"/>
+  <xacro:property name="OPTICAL_X" value="0"/>
+  <xacro:property name="OPTICAL_Y" value="0"/>
+  <xacro:property name="OPTICAL_Z" value="0"/>
+  <xacro:property name="OPTICAL_A" value="0"/>
+  <xacro:property name="OPTICAL_B" value="0"/>
+  <xacro:property name="OPTICAL_C" value="0"/>
+  <xacro:property name="PIXEL_WIDTH" value="640"/>
+  <xacro:property name="PIXEL_HEIGHT" value="480"/>
+  <xacro:property name="CAMERA_RATE" value="90.0"/>
+  <xacro:property name="CAMERA_FOV" value="0.8"/>
+  <xacro:property name="FOCLLength" value="50"/>
+  <xacro:property name="CAMERA_DISTORTION_K1" value="0"/>
+  <xacro:property name="CAMERA_DISTORTION_K2" value="0"/>
+  <xacro:property name="CAMERA_DISTORTION_K3" value="0"/>
+  <xacro:property name="CAMERA_DISTORTION_T1" value="0"/>
+  <xacro:property name="CAMERA_DISTORTION_T2" value="0"/> 
+
+ <!-- User define Stereo_Cam1 -->
+  <xacro:property name="STEREO_CAM_X" value="0.05"/>
+  <xacro:property name="STEREO_CAM_Y" value="0.07"/>
+  <xacro:property name="STEREO_CAM_Z" value="0.015"/>
+  <xacro:property name="STEREO_CAM_A" value="0"/>
+  <xacro:property name="STEREO_CAM_B" value="0"/>
+  <xacro:property name="STEREO_CAM_C" value="0"/>
+
+
+  <!-- stereo_camera_model&param_macro -->
+  <xacro:stereo_camera prefix="basler"/>
+
+  <!-- stereo_camera1_frame_joint -->
+  <joint name="stereo_camera_frame_joint" type="fixed">
+    <origin xyz="${STEREO_CAM_X} ${STEREO_CAM_Y} ${STEREO_CAM_Z}" rpy="${STEREO_CAM_A} ${STEREO_CAM_B} ${STEREO_CAM_C}" />
+    <parent link="base_link_camera"/>
+    <child link="stereo_basler"/>
+  </joint> 
+
+  <link name="base_link_camera" >
+    <visual> 
+      <geometry>
+         <box size="0.1 0.1 0.01"/>
+      </geometry>
+      <material name="LightGrey">
+        <color rgba="0.7 0.7 0.7 1.0"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+         <box size="0.1 0.1 0.01"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.1" />
+      <inertia ixx="0.1" ixy="0.0" ixz="0.0"
+        iyy="0.1" iyz="0.0"
+        izz="0.1" />
+    </inertial>
+  </link>
+
+  <joint name="world_joint_c" type="fixed">
+    <origin xyz="3.8 0.6  3" rpy="0 0.523598777 3.1415926" />
+    <parent link="world" />
+    <child link = "base_link_camera" />
+  </joint>
+
+</robot>

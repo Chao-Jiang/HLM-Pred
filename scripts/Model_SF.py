@@ -210,6 +210,8 @@ class Model_SF(Model):
 
 # Arguments: -fd 4 --num_cells=2 -wd=0.00013 -sl=7 --keep_prob=0.75
 # Training Result:
-# Percentage of testing with distance less than 0.010m is: 42.00 %
-# Percentage of testing with distance less than 0.020m is: 79.17 %
-# Percentage of testing with distance less than 0.030m is: 93.33 %
+# Percentage of testing with distance less than 0.010m is: 39.23 %
+#
+# Percentage of testing with distance less than 0.020m is: 77.08 %
+#
+# Percentage of testing with distance less than 0.030m is: 92.17 %

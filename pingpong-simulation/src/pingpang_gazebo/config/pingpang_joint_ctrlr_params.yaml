@@ -1,0 +1,49 @@
+joint_state_ctrlr:
+  type: joint_state_controller/JointStateController
+  publish_rate: 1000
+
+move_1_position_ctrlr:
+  joint: move_1_joint
+  type: effort_controllers/JointPositionController
+  pid: {p: 5000.0, i: 0.0, d: 125.0}
+
+move_1_velocity_ctrlr:
+  joint: move_1_joint
+  type: effort_controllers/JointVelocityController
+  pid: {p: 1.5, i: 1.0, d: 0.0, i_clamp: 10.0}
+
+move_1_effort_ctrlr:
+  joint: move_1_joint
+  type: effort_controllers/JointEffortController
+  pid: {p: 1.0, i: 0.0, d: 0.0}
+
+
+move_2_position_ctrlr:
+  joint: move_2_joint
+  type: effort_controllers/JointPositionController
+  pid: {p: 88000.0, i: 380.0, d: 125.0,i_clamp_min: -320.0}
+
+move_2_velocity_ctrlr:
+  joint: move_2_joint
+  type: effort_controllers/JointVelocityController
+  pid: {p: 1.5, i: 1.0, d: 0.0, i_clamp: 10.0}
+
+move_2_effort_ctrlr:
+  joint: move_2_joint
+  type: effort_controllers/JointEffortController
+  pid: {p: 1.0, i: 0.0, d: 0.0}
+
+move_3_position_ctrlr:
+  joint: move_3_joint
+  type: effort_controllers/JointPositionController
+  pid: {p: 100.0, i: 0.0, d: 7.0}
+
+move_3_velocity_ctrlr:
+  joint: move_3_joint
+  type: effort_controllers/JointVelocityController
+  pid: {p: 1.5, i: 1.0, d: 0.0, i_clamp: 10.0}
+
+move_3_effort_ctrlr:
+  joint: move_3_joint
+  type: effort_controllers/JointEffortController
+  pid: {p: 1.0, i: 0.0, d: 0.0}

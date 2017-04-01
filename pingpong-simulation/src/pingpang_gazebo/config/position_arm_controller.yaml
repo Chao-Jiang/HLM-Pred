@@ -1,0 +1,54 @@
+joint_state_ctrlr:
+  type: joint_state_controller/JointStateController
+  publish_rate: 1000
+
+
+position_arm_controller:
+  type: position_controllers/JointTrajectoryController
+  joints:
+     - move_1_joint
+     - move_2_joint
+     - move_3_joint
+
+  constraints:
+      goal_time: 0.6
+      stopped_velocity_tolerance: 0.05
+      move_1_joint: {trajectory: 0.1, goal: 0.1}
+      move_2_joint: {trajectory: 0.1, goal: 0.1}
+      move_3_joint: {trajectory: 0.1, goal: 0.1}
+
+  stop_trajectory_duration: 0.5
+  state_publish_rate:  25
+  action_monitor_rate: 10
+
+
+velocity_arm_controller:
+  type: velocity_controllers/JointTrajectoryController
+  joints:
+     - move_1_joint
+     - move_2_joint
+     - move_3_joint
+
+  gains: 
+      move_1_joint: {p: 100,  d: 1, i: 1, i_clamp: 1}
+      move_2_joint: {p: 100,  d: 1, i: 1, i_clamp: 1}
+      move_3_joint: {p: 100,  d: 1, i: 1, i_clamp: 1}
+
+  state_publish_rate:  25
+  action_monitor_rate: 10
+
+
+effort_arm_controller:
+  type: effort_controllers/JointTrajectoryController
+  joints:
+     - move_1_joint
+     - move_2_joint
+     - move_3_joint
+
+  gains: 
+      move_1_joint: {p: 100,  d: 1, i: 1, i_clamp: 1}
+      move_2_joint: {p: 100,  d: 1, i: 1, i_clamp: 1}
+      move_3_joint: {p: 100,  d: 1, i: 1, i_clamp: 1}
+
+  state_publish_rate:  25
+  action_monitor_rate: 10

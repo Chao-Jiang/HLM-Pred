@@ -1,0 +1,61 @@
+<?xml version="1.0" ?>
+<launch>
+
+  <arg name="single_mode" default="True"/>
+  <arg name="controller_mode_p" default="true"/>
+  <arg name="controller_mode_v" default="false"/>
+  <arg name="controller_mode_e" default="false"/>
+      <!-- "$(find pingpang_gazebo)/worlds/pingpang.world" -->
+  <arg name="world_name" default="$(find pingpang_gazebo)/worlds/table_tennis.world"/>
+  <!-- <arg name="world_name" default="worlds/empty.world"/> -->
+
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name" value= "$(arg world_name)"/>
+  </include>
+
+  <group if="$(arg single_mode)">
+      <param name="robot_description" command="$(find xacro)/xacro.py $(find pingpang_gazebo)/urdf/pingpang.urdf.xacro" />
+
+      <rosparam file="$(find pingpang_gazebo)/config/position_arm_controller.yaml" command="load"/>
+
+      <rosparam file="$(find ur_gazebo)/controller/arm_controller_ur10.yaml" command="load"/>
+
+      <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="-param robot_description -urdf -model pingpang_robot" />
+
+      <node name="controller_spawner" pkg="controller_manager" type="controller_manager" args="spawn joint_state_ctrlr position_arm_controller arm_controller" respawn="false" output="screen"/>
+
+<!--       <node name="pingpang_controller" pkg="pingpang_gazebo" type="Controller.py" respawn="false" output="screen">
+          <param name="mode" value="0"/>
+          <param name="time" value="2.0"/>
+          <param name = "demo" value="False"/>
+      </node>  -->
+      
+  </group>
+
+  <group unless="$(arg single_mode)">
+      <param name="robot_description" command="$(find xacro)/xacro.py $(find pingpang_gazebo)/urdf/pingpang_trp.urdf.xacro" if="$(arg controller_mode_p)"/>
+
+      <param name="robot_description" command="$(find xacro)/xacro.py $(find pingpang_gazebo)/urdf/pingpang_trv.urdf.xacro" if="$(arg controller_mode_v)"/> 
+
+      <param name="robot_description" command="$(find xacro)/xacro.py $(find pingpang_gazebo)/urdf/pingpang_tre.urdf.xacro" if="$(arg controller_mode_e)"/> 
+
+      <rosparam file="$(find pingpang_gazebo)/config/position_arm_controller.yaml" command="load"/> 
+      <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="-param robot_description -urdf -model pingpang_robot" />
+
+
+      <rosparam file="$(find ur_gazebo)/controller/arm_controller_ur10.yaml" command="load"/>
+
+      <node name="controller_spawner" pkg="controller_manager" type="controller_manager" args="spawn joint_state_ctrlr position_arm_controller arm_controller" respawn="false" output="screen" if="$(arg controller_mode_p)"/>
+
+      <node name="controller_spawner" pkg="controller_manager" type="controller_manager" args="spawn joint_state_ctrlr velocity_arm_controller arm_controller" respawn="false" output="screen" if="$(arg controller_mode_v)"/>
+
+      <node name="controller_spawner" pkg="controller_manager" type="controller_manager" args="spawn joint_state_ctrlr effort_arm_controller arm_controller" respawn="false" output="screen" if="$(arg controller_mode_e)"/>
+
+      <node name = "test" pkg="pingpang_gazebo" type="test.py" args="5.0" respawn="false" output="screen" /> 
+  
+  </group>
+
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"
+    respawn="false" output="screen">
+  </node>
+</launch>

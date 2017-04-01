@@ -18,6 +18,8 @@ import cv_bridge
 import threading
 from sensor_msgs.msg import Image
 import message_filters
+from scripts import utility
+# import utility
 
 FrameData = collections.namedtuple('FrameData', 'left, right, ball_pos')
 PredictionData = collections.namedtuple('PredictionData', 'position, frame')
@@ -56,6 +58,11 @@ class SaveFrame:
         self.image_frequency = 30.0
         self.image_period = 1 / float(self.image_frequency)
         self.image_ROSRate = rospy.Rate(self.image_frequency)
+        self.px = 0.7
+        self.py = -0.5
+        self.fx = 0.0
+        self.fy = 0.04
+        self.fz = 0.10
         self.frames_data = Queue.Queue()
         self.data_dir='./raw_data/'
         if not os.path.exists(self.data_dir):
@@ -64,19 +71,37 @@ class SaveFrame:
 
     def subscribe_frames_data(self):
         meta_data_one_frame = self.camera.get_camera_data()
+        invalid_num = 0
         if meta_data_one_frame is None:
             self.frames_data = Queue.Queue()
+            print('!!!!!Warning: Received None from camera, reseting the queue...')
+            invalid_num += 1
+            if invalid_num > 0:
+                self.relaunch_ball = True
         else:
             self.frames_data.put(meta_data_one_frame)
         # self.end = time.time()
-        # print 'time elapsed: ', self.end - self.start, ' Hz:', 1 / float(self.end - self.start)
+        # print '\ntime: ', self.end-self.start, ' hz:', 1/float(self.end - self.start)
         # self.start = self.end
 
-
-    def acquire_frames_data(self, num_images=30):
+    def acquire_frames_data(self, num_images=14):
+        center_pixels = []
+        # ball_pos = []
         # self.start = time.time()
+        discard_num = 1
+        self.relaunch_ball = False
         self.acquire_repeated_timer = RepeatedTimer(self.image_period, self.subscribe_frames_data)
-        while self.frames_data.qsize() < num_images:
+        # self.acquire_repeated_timer.start()
+        while self.frames_data.qsize() < num_images + discard_num:
+            if self.relaunch_ball:
+                self.relaunch_ball = False
+                self.acquire_repeated_timer.stop()
+                print('Relaunching ball...')
+                # self.reset()
+                time.sleep(1)
+                self.set_ball_position(px=self.px, py=self.py)
+                self.hit_ball(fx=self.fx, fy=self.fy, fz=self.fz, dt=0.15)
+                self.acquire_repeated_timer = RepeatedTimer(self.image_period, self.subscribe_frames_data)
             pass
         self.acquire_repeated_timer.stop()
         meta_data = []
@@ -122,17 +147,21 @@ class SaveFrame:
                 json.dump(xyz_data, f, indent=4)
         return ball_poses
 
-    def set_ball_position(self, px=0.7, py=-0.5):
+    def set_ball_position(self, px=0.7, py=-0.5, pz=0.85):
         rospy.wait_for_service('/gazebo/set_model_state')
         try:
+            self.px = px
+            self.py = py
             set_state = rospy.ServiceProxy('/gazebo/set_model_state', SetModelState)
             set_position_re = SetModelStateRequest()
             pose = Pose()
             pose.position.x = px
             pose.position.y = py
-            pose.position.z = 0.85
+            pose.position.z = pz
             pose.orientation.x = 0
             pose.orientation.y = 0
+            pose.orientation.z = np.sin(np.pi / 2)
+            pose.orientation.z = np.sin(np.pi / 2)
             pose.orientation.z = np.sin(np.pi / 2)
             pose.orientation.w = np.cos(np.pi / 2)
             set_position_re.model_state.model_name = 'Ping Pong Ball'
@@ -146,6 +175,9 @@ class SaveFrame:
     def hit_ball(self, fx=0.0, fy=0.15, fz=0.0, dt=0.1):
         rospy.wait_for_service('/gazebo/apply_body_wrench')
         try:
+            self.fx = fx
+            self.fy = fy
+            self.fz = fz
             apply_force = rospy.ServiceProxy('/gazebo/apply_body_wrench', ApplyBodyWrench)
             apply_force_re = ApplyBodyWrenchRequest()
             apply_force_re.body_name = 'Ping Pong Ball::ball'
@@ -241,16 +273,19 @@ if __name__ == "__main__":
     rospy.init_node('acquire_frame_data')
     camera = Camera()
     SF = SaveFrame(camera=camera)
-    repeat_num = 100
-    bounds = np.array([[0.036, 0.042],
-                       [0.100, 0.1007]])
-    num = np.array([4, 2])
-    x_offset = np.arange(-0.7, 0.7, 0.05).reshape(-1, 1)
+    repeat_num = 50
+    ball_poses_all = []
+    bounds = np.array([[0.050, 0.057],
+                       [0.068, 0.076]])
+    num = np.array([8, 5])
+    x_offset = np.arange(-0.6, 0.6, 0.1).reshape(-1, 1)
     yz = SF.generate_force(bounds=bounds, num=num)
     x_offset_num = x_offset.shape[0]
     yz_num = yz.shape[0]
     x_offset = np.repeat(x_offset, yz_num, axis=0)
     yz = np.tile(yz, (x_offset_num, 1))
+    # x_offset = np.tile(x_offset, (yz_num, 1))
+    # yz = np.repeat(yz, x_offset_num, axis=0)
     print 'force condition size:', yz.shape[0]
     process_indices = np.array_split(np.arange(yz.shape[0]), 3)
     f_start_idx = process_indices[process_index][0]
@@ -263,11 +298,11 @@ if __name__ == "__main__":
             px = x_offset[idx] + 0.7
             fx = 0.0
             fy, fz = yz[idx]
-            print('Collecting data for f%d-h%d, x=%.3f, fx=%.3f, fy=%.3f, fz=%.3f ...' %
+            print('Collecting data for f%d-h%d, x=%.4f, fx=%.4f, fy=%.4f, fz=%.4f ...' %
                   (idx, r_idx, px, fx, fy, fz))
-            SF.set_ball_position(px=px, py=-0.5)
+            SF.set_ball_position(px=px, py=-0.5, pz=0.85)
             SF.hit_ball(fx=fx, fy=fy, fz=fz, dt=0.15)
-            meta_data = SF.acquire_frames_data(num_images=30)
+            meta_data = SF.acquire_frames_data(num_images=60)
             ball_poses = SF.save_data(fx=fx, fy=fy, fz=fz,
                                       meta_data=meta_data,
                                       f_idx=idx,
@@ -281,6 +316,9 @@ if __name__ == "__main__":
                   "estimated finished time: \033[94m %s \033[00m" % (loop_num, conditions,
                                                    elapsed_time,
                                                    est_finished_time.strftime("%Y-%m-%d %H:%M:%S")))
+            # ball_poses_all.append(ball_poses)
+    # ball_poses_all = np.asarray(ball_poses_all)
+    # utility.plot_3d([ball_poses_all, ball_poses_all[:, 47, :]], draw_now=True)
 
 
 
