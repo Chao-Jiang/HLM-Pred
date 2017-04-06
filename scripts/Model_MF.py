@@ -111,27 +111,6 @@ class Model_MF(Model):
                                    W_init_args={'regularizer':
                                                     tf.contrib.layers.l2_regularizer(self.args.weight_decay)},
                                    name='fc_4')
-        # net = tl.layers.DenseLayer(net,
-        #                            n_units=128,
-        #                            act=tf.nn.elu,
-        #                            W_init=tf.contrib.layers.variance_scaling_initializer(),
-        #                            W_init_args={'regularizer':
-        #                                             tf.contrib.layers.l2_regularizer(self.args.weight_decay)},
-        #                            name='fc_5')
-        # net = tl.layers.DenseLayer(net,
-        #                            n_units=128,
-        #                            act=tf.nn.elu,
-        #                            W_init=tf.contrib.layers.variance_scaling_initializer(),
-        #                            W_init_args={'regularizer':
-        #                                             tf.contrib.layers.l2_regularizer(self.args.weight_decay)},
-        #                            name='fc_6')
-        # net = tl.layers.DenseLayer(net,
-        #                            n_units=128,
-        #                            act=tf.nn.elu,
-        #                            W_init=tf.contrib.layers.variance_scaling_initializer(),
-        #                            W_init_args={'regularizer':
-        #                                             tf.contrib.layers.l2_regularizer(self.args.weight_decay)},
-        #                            name='fc_7')
         mus_num = self.args.num_mixtures * self.args.gaussian_dim
         sigmas_num = self.args.num_mixtures * self.args.gaussian_dim
         weights_num = self.args.num_mixtures

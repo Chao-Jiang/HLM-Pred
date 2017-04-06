@@ -302,7 +302,7 @@ if __name__ == "__main__":
                   (idx, r_idx, px, fx, fy, fz))
             SF.set_ball_position(px=px, py=-0.5, pz=0.85)
             SF.hit_ball(fx=fx, fy=fy, fz=fz, dt=0.15)
-            meta_data = SF.acquire_frames_data(num_images=60)
+            meta_data = SF.acquire_frames_data(num_images=48)
             ball_poses = SF.save_data(fx=fx, fy=fy, fz=fz,
                                       meta_data=meta_data,
                                       f_idx=idx,

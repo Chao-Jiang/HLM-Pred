@@ -241,7 +241,8 @@ class RobotControl:
             ball_pos = ball_pos
         else:
             ball_pos = ball_pos[-1, :]
-        origin_xyz = np.array([0.694, 2.841, 0.816])
+        origin_xyz = np.array([0.694, 2.841, 0.786])
+        # origin_xyz = np.array([0.694, 2.841, 0.816])
         # ball_pos = np.asarray(ball_pos) + origin_xyz
         offset = np.asarray(ball_pos) - origin_xyz
         return offset
@@ -535,8 +536,8 @@ class Camera:
 if __name__ == "__main__":
     rospy.init_node('table_tennis_play')
     camera = Camera()
-    SINGLE_FRAME_PREDICTION = True
-    RANDOM = False
+    SINGLE_FRAME_PREDICTION = False
+    RANDOM = True
     RC = RobotControl(camera=camera,
                       moveit_execute=False,
                       make_plan=False,
@@ -546,19 +547,22 @@ if __name__ == "__main__":
     prediction = []
     trial_num = 0
     train_condition = {
-        'px': np.arange(0, 1.4, 0.05),
-        'fy': np.array([0.038, 0.040, 0.042]),
-        'fz': np.array([0.100])
+        'px': np.arange(0.1, 1.3, 0.1),
+        'fy': np.array([0.050, 0.051, 0.052, 0.053, 0.054, 0.055, 0.056, 0.057]),
+        'fz': np.linspace(0.068, 0.076, 5)
     }
     while not rospy.is_shutdown() and trial_num < 20:
         if RANDOM:
+            # px = np.random.uniform(0.1, 1.3, 1)#np.random.choice(train_condition['px'], 1)
+            # fy = np.random.uniform(0.05, 0.057, 1)#np.random.choice(train_condition['fy'], 1)
+            # fz = np.random.uniform(0.068, 0.076, 1)#np.random.choice(train_condition['fz'], 1)
             px = np.random.choice(train_condition['px'], 1)
             fy = np.random.choice(train_condition['fy'], 1)
             fz = np.random.choice(train_condition['fz'], 1)
         else:
             px = 0.7
-            fy = 0.040
-            fz = 0.10
+            fy = 0.053#0.040
+            fz = 0.072#0.10
         print('px = %.3f, fy = %.3f, fz = %.3f' % (px, fy, fz))
         RC.move_base(np.zeros(3))
         RC.reset()

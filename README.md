@@ -18,9 +18,9 @@ Ball's position in a single future frame or several future frames
 
 **Given** a user-specified number of initial frames of camera **images** of flying table tennis ball, the algorithm here can **predict** the cartesian coordinate of **table tennis ball** in the future frames in the world coordinate system. 
 
-For example, after training, the algorithm can predict the position of table tennis ball 33 frames later after it received the initial 14 frames of table tennis ball flying camera views. That's to say, after a table tennis ball is served, a camera will be recording visual images of this scene periodically (30 Hz). And the algorithm can predict the ball position in the 47th (14 + 33) frames, i.e., the ball's position after 1.6s since it's launched. Based on the prediction, the robot will be able to kick back the ball.
+For example, after training, the algorithm can predict the position of table tennis ball 17 frames later after it received the initial 7 frames of table tennis ball flying camera views. That's to say, after a table tennis ball is served, a camera will be recording visual images of this scene periodically (15 Hz). And the algorithm can predict the ball position in the 24th (7 + 17) frames, i.e., the ball's position after 1.6s since it's launched. Based on the prediction, the robot will be able to kick back the ball.
 
-The algorithm is able to accurately predict the future (like 33 frames later) ball's position based on the initial 14 consecutive camera views. Plus, it can also **predict ball's position in several future frames** (like future 8 frames) **simultaneously** based on these 14 initial frames, i.e., ball's positions in 40th to 47th frames.
+The algorithm is able to accurately predict the future (like 17 frames later) ball's position based on the initial 7 consecutive camera views. Plus, it can also **predict ball's position in several future frames** (like future 5 frames) **simultaneously** based on these 7 initial frames, i.e., ball's positions in 20th to 24th frames.
 
 ---
 
@@ -81,22 +81,22 @@ python main.py
 
 **Single frame prediction training**:
 ```bash
-python main.py -fd 4 --num_cells=2 -wd=0.00013 -sl=14 --keep_prob=0.75
+python main.py -fd 4 --num_cells=2 -wd=0.00003 -sl=14 --keep_prob=0.75
 ```
 
 **Testing**:
 ```bash
-python main.py -fd 4 --num_cells=2 -wd=0.00013 -sl=14 --keep_prob=0.75 --test
+python main.py -fd 4 --num_cells=2 -wd=0.00003 -sl=14 --keep_prob=0.75 --test
 ```
 
 **Multiple frames prediction training**:
 ```bash
-python main.py --train_condition=multiframe_pred -fd=4 --num_cells=2 -wd=0.00013 -sl=14 --keep_prob=0.75
+python main.py --train_condition=multiframe_pred -fd=4 --num_cells=2 -wd=0.00003 -sl=14 --keep_prob=0.75
 ```
 
 **Testing**:
 ```bash
-python main.py --train_condition=multiframe_pred -fd=4 --num_cells=2 -wd=0.00013 -sl=14 --keep_prob=0.75 --test
+python main.py --train_condition=multiframe_pred -fd=4 --num_cells=2 -wd=0.00003 -sl=14 --keep_prob=0.75 --test
 ```
 
 ### Control UR robot
@@ -125,12 +125,12 @@ Then, run the prediction script in `<path_to_HLM-Pred>/scripts`
 **Single frame prediction**:
 ```bash
 cd <path_to_HLM-Pred>/scripts/
-python main.py --train_condition=real_time_play -fd 4 --num_cells=2 -wd=0.00013 -sl=14 --keep_prob=0.75
+python main.py --train_condition=real_time_play -fd 4 --num_cells=2 -wd=0.00003 -sl=14 --keep_prob=0.75
 ```
 
 **Multiple frame prediction**:
 ```bash
-python main.py --train_condition=real_time_play -fd=4 --num_cells=2 -wd=0.00013 -sl=14 --keep_prob=0.75 -md
+python main.py --train_condition=real_time_play -fd=4 --num_cells=2 -wd=0.00003 -sl=14 --keep_prob=0.75 -md
 ```
 
 These are just example usages, modify the arguments according to your own needs.
@@ -216,75 +216,58 @@ optional arguments:
 
 ## Training Result:
 
-**Single frame prediction**: given 14 initial camera frames, predict the position of table tennis ball in the 33th frame starting from the last frame (the 14th frame input), i.e., the ball's position in the 47th (14 + 33) frame
+**Single frame prediction**: given 14 initial camera frames, predict the position of table tennis ball in the 24th frame starting from the last frame (the 14th frame input), i.e., the ball's position in the 47th (14 + 33) frame
 ```bash
-Percentage of testing with distance less than 0.010m is: 39.23 %
-Percentage of testing with distance less than 0.020m is: 77.08 %
-Percentage of testing with distance less than 0.030m is: 92.17 %
+Percentage of testing with distance less than 0.010m is: 57.22 %
+Percentage of testing with distance less than 0.020m is: 82.62 %
+Percentage of testing with distance less than 0.030m is: 91.17 %
 ```
 
-**Multiple frames prediction**: given 14 initial camera frames, predict the position of table tennis ball in the 26th to the 33th frames starting from the last frame (the 14th frame input), i.e., the ball's position in the 40th to 47th frame
+**Multiple frames prediction**: given 14 initial camera frames, predict the position of table tennis ball in the 19th to the 24th frames starting from the last frame (the 14th frame input), i.e., the ball's position in the 33th to 38th frame
 
-26th frame：
+19th frame：
 ```bash
 Time step 0 Distances statistics:
-Percentage with distance less than 0.010m is: 61.10 %
-Percentage with distance less than 0.020m is: 92.33 %
-Percentage with distance less than 0.030m is: 98.73 %
+Percentage with distance less than 0.010m is: 68.72 %
+Percentage with distance less than 0.020m is: 89.21 %
+Percentage with distance less than 0.030m is: 96.33 %
 ```
 
-27th frame：
+20th frame：
 ```bash
 Time step 1 Distances statistics:
-Percentage with distance less than 0.010m is: 59.94 %
-Percentage with distance less than 0.020m is: 91.72 %
-Percentage with distance less than 0.030m is: 98.52 %
+Percentage with distance less than 0.010m is: 65.21 %
+Percentage with distance less than 0.020m is: 87.85 %
+Percentage with distance less than 0.030m is: 96.33 %
 ```
 
-28th frame：
+21th frame：
 ```bash
-Time step 2 Distances statistics:
-Percentage with distance less than 0.010m is: 57.60 %
-Percentage with distance less than 0.020m is: 90.22 %
-Percentage with distance less than 0.030m is: 98.30 %
+Percentage with distance less than 0.010m is: 64.35 %
+Percentage with distance less than 0.020m is: 87.36 %
+Percentage with distance less than 0.030m is: 95.64 %
 ```
 
-29th frame：
+22th frame：
 ```bash
 Time step 3 Distances statistics:
-Percentage with distance less than 0.010m is: 55.55 %
-Percentage with distance less than 0.020m is: 88.38 %
-Percentage with distance less than 0.030m is: 97.59 %
+Percentage with distance less than 0.010m is: 61.85 %
+Percentage with distance less than 0.020m is: 86.14 %
+Percentage with distance less than 0.030m is: 94.64 %
 ```
 
-30th frame：
+23th frame：
 ```bash
 Time step 4 Distances statistics:
-Percentage with distance less than 0.010m is: 53.26 %
-Percentage with distance less than 0.020m is: 84.98 %
-Percentage with distance less than 0.030m is: 96.10 %
+Percentage with distance less than 0.010m is: 60.36 %
+Percentage with distance less than 0.020m is: 85.56 %
+Percentage with distance less than 0.030m is: 94.32 %
 ```
 
-31th frame：
+24th frame：
 ```bash
 Time step 5 Distances statistics:
-Percentage with distance less than 0.010m is: 49.48 %
-Percentage with distance less than 0.020m is: 82.52 %
-Percentage with distance less than 0.030m is: 95.30 %
-```
-
-32th frame：
-```bash
-Time step 6 Distances statistics:
-Percentage with distance less than 0.010m is: 46.00 %
-Percentage with distance less than 0.020m is: 79.10 %
-Percentage with distance less than 0.030m is: 93.19 %
-```
-
-33th frame：
-```bash
-Time step 7 Distances statistics:
-Percentage with distance less than 0.010m is: 45.26 %
-Percentage with distance less than 0.020m is: 76.33 %
-Percentage with distance less than 0.030m is: 90.95 %
+Percentage with distance less than 0.010m is: 56.74 %
+Percentage with distance less than 0.020m is: 83.32 %
+Percentage with distance less than 0.030m is: 93.57 %
 ```

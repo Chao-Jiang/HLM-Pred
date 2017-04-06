@@ -194,6 +194,8 @@ class TrainConditions(object):
 
     def _center_pixel_input_multiframe_output(self, args):
         features_train, features_test, coords_train, coords_test = self._restore_train_test_data(args)
+        # train_a_min = np.argmin(coords_train[:, :, 2], axis=1)
+        # test_a_min = np.argmin(coords_test[:, :, 2], axis=1)
 
         start_steps = [1, 2, 3]
         for idx, value in enumerate(start_steps):

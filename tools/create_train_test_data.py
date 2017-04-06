@@ -17,7 +17,7 @@ def create_train_test(args):
         os.makedirs(train_test_dir)
     c_pixel_files = os.listdir(center_pixel_dir)
     c_pixel_files = [c_file for c_file in c_pixel_files if c_file.endswith('.json')]
-    num_frames = 58
+    num_frames = 48
     traj_repeat_num = 50
     xys = np.empty((0, num_frames, 4))  # center pixel in left and right image
     xyzs = np.empty((0, num_frames, 3))

@@ -66,7 +66,6 @@
   </link>
    
   <joint name="move_joint" type="fixed">
-    <!-- <origin xyz="1.4 3.2 0.25" rpy="0 0 0" /> -->
     <origin xyz="1.4 3.4 0.005" rpy="0 0 0" />
     <parent link="world" />
     <child link = "base_link_m" />
@@ -80,11 +79,7 @@
       </geometry>
       <material name="body"/>
     </visual>
-<!--     <collision>
-      <geometry>
-         <box size="0.02 0.02 0.6"/>
-      </geometry>
-    </collision> -->
+
     <inertial>
       <mass value="0.1" />
       <inertia ixx="0.1" ixy="0.0" ixz="0.0"
@@ -95,7 +90,6 @@
 
   <joint name="move_1_joint" type="prismatic">
     <origin xyz="0 0 0.245" rpy="0 0 0" />
-     <!-- <origin xyz="0 0 0.6" rpy="0 0 0" /> -->
     <axis xyz="1 0 0"/>
     <parent link="base_link_m" />
     <child link = "move_1_link" />
@@ -109,11 +103,7 @@
       </geometry>
       <material name="body"/>
     </visual>
-<!--     <collision>
-      <geometry>
-         <box size="0.02 0.02 0.2"/>
-      </geometry>
-    </collision> -->
+
     <inertial>
       <mass value="0.1" />
       <inertia ixx="0.1" ixy="0.0" ixz="0.0"
@@ -137,11 +127,7 @@
       </geometry>
       <material name="body"/>
     </visual>
-<!--     <collision>
-      <geometry>
-         <box size="0.2 0.01 0.2"/>
-      </geometry>
-    </collision> -->
+
     <inertial>
       <mass value="0.1" />
       <inertia ixx="0.1" ixy="0.0" ixz="0.0"
@@ -163,7 +149,7 @@
   <xacro:ur10_robot prefix="" joint_limited="false"/>
 
   <joint name="base_joint" type="fixed">
-    <!-- <origin xyz="-1 0.5 1" rpy="0 ${-degrees_90} 0 " /> -->
+
     <origin xyz="0.0 -0.165 0.0" rpy="3.1415926 ${degrees_90} 0 " />
     <parent link="move_2_link" />
     <child link = "base_link" />

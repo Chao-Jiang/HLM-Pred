@@ -136,19 +136,19 @@ def plot_3d(points_list, title=None, draw_now=True, seq_length=None, start=0):
         #            points_list[0][idx, 0, 2],
         #            marker='s', c='y', s=6)
         # Get rid of the panes
-        # ax.w_xaxis.set_pane_color((1.0, 1.0, 1.0, 0.0))
-        # ax.w_yaxis.set_pane_color((1.0, 1.0, 1.0, 0.0))
-        # ax.w_zaxis.set_pane_color((1.0, 1.0, 1.0, 0.0))
-        #
-        # # Get rid of the spines
-        # ax.w_xaxis.line.set_color((1.0, 1.0, 1.0, 0.0))
-        # ax.w_yaxis.line.set_color((1.0, 1.0, 1.0, 0.0))
-        # ax.w_zaxis.line.set_color((1.0, 1.0, 1.0, 0.0))
-        #
-        # # Get rid of the ticks
-        # ax.set_xticks([])
-        # ax.set_yticks([])
-        # ax.set_zticks([])
+        ax.w_xaxis.set_pane_color((1.0, 1.0, 1.0, 0.0))
+        ax.w_yaxis.set_pane_color((1.0, 1.0, 1.0, 0.0))
+        ax.w_zaxis.set_pane_color((1.0, 1.0, 1.0, 0.0))
+
+        # Get rid of the spines
+        ax.w_xaxis.line.set_color((1.0, 1.0, 1.0, 0.0))
+        ax.w_yaxis.line.set_color((1.0, 1.0, 1.0, 0.0))
+        ax.w_zaxis.line.set_color((1.0, 1.0, 1.0, 0.0))
+
+        # Get rid of the ticks
+        ax.set_xticks([])
+        ax.set_yticks([])
+        ax.set_zticks([])
         if len(points_list) == 2:
             if len(points_list[1].shape) == 2:
                 ax.scatter(points_list[1][idx, 0],
@@ -258,7 +258,6 @@ def get_biases(shape, b_init):
                         trainable=True)
     return b
 
-
 class BatchNormLayer(tl.layers.Layer):
     def __init__(self,
                  layer=None,
@@ -271,39 +270,7 @@ class BatchNormLayer(tl.layers.Layer):
         tl.layers.Layer.__init__(self, name=name)
         self.inputs = layer.outputs
 
-        print("  [TL] Highway  %s: %s" % (self.name, act.__name__))
-        with tf.variable_scope(name) as scope:
-            vars = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)
-            batch_norm_params = {'is_training': is_train,
-                                 'center': True,
-                                 'scale': True,
-                                 'decay': decay,
-                                 'activation_fn': act,
-                                 'epsilon': epsilon}
-            # vars = tf.trainable_variables()
-            self.outputs = tf.contrib.slim.batch_norm(self.inputs, **batch_norm_params)
-            new_vars = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)
-            bn_vars = list(set(new_vars) - set(vars))
-
-        self.all_layers = list(layer.all_layers)
-        self.all_params = list(layer.all_params)
-        self.all_drop = dict(layer.all_drop)
-        self.all_layers.extend([self.outputs])
-        self.all_params.extend(bn_vars)
-
-class BatchNormLayer(tl.layers.Layer):
-    def __init__(self,
-                 layer=None,
-                 decay=0.9,
-                 epsilon=0.00001,
-                 act=tf.identity,
-                 is_train=False,
-                 name='batchnorm_layer',
-                 ):
-        tl.layers.Layer.__init__(self, name=name)
-        self.inputs = layer.outputs
-
-        print("  [TL] Highway  %s: %s" % (self.name, act.__name__))
+        print("  [TL] BatchNormLayer  %s: %s" % (self.name, act.__name__))
         with tf.variable_scope(name) as scope:
             vars = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)
             batch_norm_params = {'is_training': is_train,

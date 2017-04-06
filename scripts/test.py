@@ -81,14 +81,41 @@
 #     except rospy.ServiceException, e:
 #         print "Service call failed: %s" % e
 
+# import json
+# import cPickle
+#
+# filename = '/home/chentao/HLM-Pred (copy)/train/data/processed_data/c_pixel/c_pixel_2.json'
+# with open(filename, 'r') as f:
+#     data = json.load(f)
+#
+# with open(filename.replace('json', 'cpickle'), 'w+') as f:
+#     cPickle.dump(data, f, protocol=cPickle.HIGHEST_PROTOCOL)
+
 import json
-import cPickle
+import numpy as np
+import matplotlib.pyplot as plt
 
-filename = '/home/chentao/HLM-Pred2/train/data/processed_data/c_pixel/train_test/c_pixel_test.json'
+filename = '/home/chentao/Downloads/run-.-tag-evaluation_euclidean_dist.json'
 with open(filename, 'r') as f:
-    data = json.load(f)
+    data = np.asarray(json.load(f))
 
-with open(filename.replace('json', 'cpickle'), 'w+') as f:
-    cPickle.dump(data, f, protocol=cPickle.HIGHEST_PROTOCOL)
-
+x = data[:, 1]
+y = data[:, 2]
+cutoff = np.argmin(x < 50000)
+x = x[:cutoff]
+y = y[:cutoff]
+plt.plot(x, y, 'y-')
+plt.title('Evaluation Loss')
+plt.xlabel(' Step ')
+plt.ylabel(' Average distance (m) ')
+plt.yticks(np.arange(0, np.max(y) + 0.005, 0.01))
+x_1 = np.linspace(0, np.max(x), 500)
+y_1 = np.ones(x_1.shape) * 0.01
+y_2 = np.ones(x_1.shape) * 0.02
+y_3 = np.ones(x_1.shape) * 0.03
+plt.plot(x_1, y_1, 'r--')
+plt.plot(x_1, y_2, 'g--')
+plt.plot(x_1, y_3, 'b--')
+plt.savefig('m_eval_loss.png')
+plt.show()
 

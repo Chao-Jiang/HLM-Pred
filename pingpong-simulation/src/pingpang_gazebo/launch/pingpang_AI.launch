@@ -6,7 +6,7 @@
   <arg name="controller_mode_v" default="false"/>
   <arg name="controller_mode_e" default="false"/>
       <!-- "$(find pingpang_gazebo)/worlds/pingpang.world" -->
-  <arg name="world_name" default="$(find pingpang_gazebo)/worlds/table_tennis.world"/>
+  <arg name="world_name" default="$(find pingpang_gazebo)/worlds/t1_yang_v1.1.world"/>
   <!-- <arg name="world_name" default="worlds/empty.world"/> -->
 
   <include file="$(find gazebo_ros)/launch/empty_world.launch">

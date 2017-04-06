@@ -52,10 +52,10 @@ def main():
     parser.add_argument('--ckpt_interval', type=int, default=500,
                         help='checkpoint file save interval')
     parser.add_argument('--predicted_step', '-ps', type=int,
-                        default=33, help='which time step after the '
+                        default=24, help='which time step after the '
                                          'last sequence input to make prediction ')
     parser.add_argument('--pred_frames_num', '-pfn', type=int,
-                        default=8, help='if predicting multiple frames, how many frames to predict')
+                        default=6, help='if predicting multiple frames, how many frames to predict')
     parser.add_argument('--multi_pred', '-md', action='store_true',
                         help='if in real_time_play mode, choose whether to '
                              'predict single frame or multiple frames')
