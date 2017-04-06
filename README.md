@@ -3,6 +3,8 @@
 
 Implementation of **Highway network + LSTM + MDN** to perform prediction of flying table tennis ball
 
+A brief report can be found in `report/table_tennis_prediciton.pdf`
+
 ---
 ## IO
 
