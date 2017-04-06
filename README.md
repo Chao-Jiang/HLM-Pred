@@ -3,6 +3,8 @@
 
 Implementation of **Highway network + LSTM + MDN** to perform prediction of flying table tennis ball
 
+Please refer to [this branch](https://github.com/CTTC/HLM-Pred/tree/better_gazebo_model) to see the **detailed neural network structure**
+
 ---
 
 **Input**:
