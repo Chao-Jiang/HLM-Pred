@@ -4,6 +4,7 @@
 Implementation of **Highway network + LSTM + MDN** to perform prediction of flying table tennis ball
 
 ---
+## IO
 
 **Input**:
 
@@ -14,15 +15,31 @@ Intial several camera views of flying table tennis
 Ball's position in a single future frame or several future frames
 
 ---
-
+## Mission
 
 **Given** a user-specified number of initial frames of camera **images** of flying table tennis ball, the algorithm here can **predict** the cartesian coordinate of **table tennis ball** in the future frames in the world coordinate system. 
 
-For example, after training, the algorithm can predict the position of table tennis ball 17 frames later after it received the initial 7 frames of table tennis ball flying camera views. That's to say, after a table tennis ball is served, a camera will be recording visual images of this scene periodically (15 Hz). And the algorithm can predict the ball position in the 24th (7 + 17) frames, i.e., the ball's position after 1.6s since it's launched. Based on the prediction, the robot will be able to kick back the ball.
+For example, after training, the algorithm can predict the position of table tennis ball 34 frames later after it received the initial 14 frames of table tennis ball flying camera views. That's to say, after a table tennis ball is served, a camera will be recording visual images of this scene periodically 30 Hz). And the algorithm can predict the ball position in the 38th (14 + 24) frames, i.e., the ball's position after 1.6s since it's launched. Based on the prediction, the robot will be able to kick back the ball.
 
-The algorithm is able to accurately predict the future (like 17 frames later) ball's position based on the initial 7 consecutive camera views. Plus, it can also **predict ball's position in several future frames** (like future 5 frames) **simultaneously** based on these 7 initial frames, i.e., ball's positions in 20th to 24th frames.
+The algorithm is able to accurately predict the future (like 24 frames later) ball's position based on the initial 14 consecutive camera views. Plus, it can also **predict ball's position in several future frames** (like future 6 frames) **simultaneously** based on these 14 initial frames, i.e., ball's positions in 19th to 24th frames.
+
 
 ---
+
+## Neural Network Structure
+
+**Highway Networks**
+![](figures/highway.png)
+
+**Neural Network for Single Frame Prediction**
+![](figures/s_nn.png)
+
+**Neural Network for Multiple Frame Predictions**
+![](figures/m_nn.png)
+
+---
+
+## Prediction Animation
 
 **Single-Frame Prediction**:
 
