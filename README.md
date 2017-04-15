@@ -8,7 +8,9 @@ Please refer to [this branch](https://github.com/CTTC/HLM-Pred/tree/better_gazeb
 ---
 
 **Performance**
-<iframe width="560" height="315" src="https://www.youtube.com/embed/FS1Ry3mMRWM" frameborder="0" allowfullscreen></iframe>
+
+[![Palying Table Tennis with DNN](https://gifs.com/gif/playing-table-tennis-with-dnn-nZA9Vl)](https://youtu.be/FS1Ry3mMRWM)
+
 ---
 
 **Input**:
