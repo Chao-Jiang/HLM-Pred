@@ -9,7 +9,7 @@ Please refer to [this branch](https://github.com/CTTC/HLM-Pred/tree/better_gazeb
 
 **Performance**
 
-[![Palying Table Tennis with DNN](https://gifs.com/gif/playing-table-tennis-with-dnn-nZA9Vl)](https://youtu.be/FS1Ry3mMRWM)
+[![Palying Table Tennis with DNN](https://j.gifs.com/nZA9Vl.gif)](https://youtu.be/FS1Ry3mMRWM)
 
 ---
 
