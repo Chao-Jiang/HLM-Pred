@@ -1,5 +1,6 @@
 # Table Tennis Ball Prediction
 
+[![DOI](https://zenodo.org/badge/85822225.svg)](https://zenodo.org/badge/latestdoi/85822225)
 
 Implementation of **Highway network + LSTM + MDN** to perform prediction of flying table tennis ball
 
