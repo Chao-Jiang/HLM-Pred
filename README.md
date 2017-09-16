@@ -2,6 +2,13 @@
 
 [![DOI](https://zenodo.org/badge/85822225.svg)](https://zenodo.org/badge/latestdoi/85822225)
 
+## LICENSE
+MIT License
+
+Please cite this github repository with the DOI above if it helps your research.
+
+---
+
 Implementation of **Highway network + LSTM + MDN** to perform prediction of flying table tennis ball
 
 
