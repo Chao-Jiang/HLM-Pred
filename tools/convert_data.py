@@ -21,7 +21,7 @@ def get_left_right_center_pixel(args, restore=False, save=True, process_index=0)
         data_dir = os.path.join(args.train_dir, 'raw_data')
         force_folders = [os.path.join(data_dir, folder) for folder in os.listdir(data_dir)
                          if os.path.isdir(os.path.join(data_dir, folder))]
-        num_frames = 58
+        num_frames = 48
         xys = np.empty((0, num_frames, 4)) # center pixel in left and right image
         xyzs = np.empty((0, num_frames, 3)) # cartesian coordinate of table tennis ball in the world
 

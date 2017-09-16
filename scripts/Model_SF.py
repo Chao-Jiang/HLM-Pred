@@ -41,7 +41,7 @@ class Model_SF(Model):
         with tf.variable_scope('fc1'):
             net = tl.layers.TimeDistributedLayer(net,
                                                  layer_class=tl.layers.DenseLayer,
-                                                 args={'n_units': 32,
+                                                 args={'n_units': 64,
                                                        'act': tf.nn.elu,
                                                        'W_init': tf.contrib.layers.variance_scaling_initializer(),
                                                        'W_init_args': {'regularizer':
@@ -52,7 +52,7 @@ class Model_SF(Model):
         with tf.variable_scope('highway'):
             num_highway = 3
             for idx in xrange(num_highway):
-                highway_args = {'n_units': 32,
+                highway_args = {'n_units': 64,
                                 'act': tf.nn.elu,
                                 'W_init': tf.contrib.layers.variance_scaling_initializer(),
                                 'b_init': tf.constant_initializer(value=0.0),
@@ -116,7 +116,7 @@ class Model_SF(Model):
         #                               reuse=False,
         #                               name='highway_%d'%idx)
         net = tl.layers.DenseLayer(net,
-                                   n_units=32,
+                                   n_units=64,
                                    act=tf.nn.elu,
                                    W_init=tf.contrib.layers.variance_scaling_initializer(),
                                    W_init_args={'regularizer':
@@ -207,9 +207,3 @@ class Model_SF(Model):
                 data = [percentage_thr, percentage_double_thr, percentage_triple_thr]
                 csv_writer.writerow(data)
 
-
-# Arguments: -fd 4 --num_cells=2 -wd=0.00013 -sl=7 --keep_prob=0.75
-# Training Result:
-# Percentage of testing with distance less than 0.010m is: 42.00 %
-# Percentage of testing with distance less than 0.020m is: 79.17 %
-# Percentage of testing with distance less than 0.030m is: 93.33 %

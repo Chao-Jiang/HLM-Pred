@@ -130,7 +130,11 @@ def plot_3d(points_list, title=None, draw_now=True, seq_length=None, start=0):
         ax.scatter(points_list[0][idx, :, 0],
                    points_list[0][idx, :, 1],
                    points_list[0][idx, :, 2],
-                   marker='o', c='r', s=15)
+                   marker='o', c='r', s=6)
+        # ax.scatter(points_list[0][idx, 0, 0],
+        #            points_list[0][idx, 0, 1],
+        #            points_list[0][idx, 0, 2],
+        #            marker='s', c='y', s=6)
         # Get rid of the panes
         ax.w_xaxis.set_pane_color((1.0, 1.0, 1.0, 0.0))
         ax.w_yaxis.set_pane_color((1.0, 1.0, 1.0, 0.0))
@@ -150,13 +154,13 @@ def plot_3d(points_list, title=None, draw_now=True, seq_length=None, start=0):
                 ax.scatter(points_list[1][idx, 0],
                            points_list[1][idx, 1],
                            points_list[1][idx, 2],
-                           c='k', marker='x',
+                           c='k', marker='x', s=10,
                            label='prediction')
             elif len(points_list[1].shape) == 3:
                 ax.scatter(points_list[1][idx, :, 0],
                            points_list[1][idx, :, 1],
                            points_list[1][idx, :, 2],
-                           c='k', marker='x',
+                           c='k', marker='x', s=10,
                            label='prediction')
                 ax.plot(points_list[1][idx, :, 0],
                         points_list[1][idx, :, 1],
@@ -171,6 +175,28 @@ def plot_3d(points_list, title=None, draw_now=True, seq_length=None, start=0):
         plt.title(title)
     if draw_now:
         plt.show()
+
+
+def remove_outliers(data, sup_data, cutoff_frame=50, sor_threshold=0.8, var_threshold=0.001):
+    from sklearn import linear_model
+    import warnings
+    warnings.filterwarnings("ignore", category=DeprecationWarning)
+    valid_idx = []
+    invalid_idx = []
+    for idx in xrange(data.shape[0]):
+        x = data[idx, :cutoff_frame, 1].reshape(-1, 1)
+        y = data[idx, :cutoff_frame, 0].reshape(-1)
+        regr = linear_model.LinearRegression(fit_intercept=True, normalize=False)
+        regr.fit(x, y)
+        res = regr.residues_
+        if isinstance(res, list) or (not isinstance(res, list) and res < sor_threshold):
+            valid_idx.append(idx)
+        else:
+            invalid_idx.append(idx)
+            print('Invalid data idx: ', idx, ' residue: ', res)
+    print('\nValid data length: ', len(valid_idx))
+    return data[valid_idx, :cutoff_frame, :], sup_data[valid_idx, :cutoff_frame, :], invalid_idx
+
 
 def featurewise_norm(X, featurewise_mean=None, featurewise_std=None, epsilon=1e-7, copy=True):
     """
@@ -232,7 +258,6 @@ def get_biases(shape, b_init):
                         trainable=True)
     return b
 
-
 class BatchNormLayer(tl.layers.Layer):
     def __init__(self,
                  layer=None,
@@ -245,39 +270,7 @@ class BatchNormLayer(tl.layers.Layer):
         tl.layers.Layer.__init__(self, name=name)
         self.inputs = layer.outputs
 
-        print("  [TL] Highway  %s: %s" % (self.name, act.__name__))
-        with tf.variable_scope(name) as scope:
-            vars = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)
-            batch_norm_params = {'is_training': is_train,
-                                 'center': True,
-                                 'scale': True,
-                                 'decay': decay,
-                                 'activation_fn': act,
-                                 'epsilon': epsilon}
-            # vars = tf.trainable_variables()
-            self.outputs = tf.contrib.slim.batch_norm(self.inputs, **batch_norm_params)
-            new_vars = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)
-            bn_vars = list(set(new_vars) - set(vars))
-
-        self.all_layers = list(layer.all_layers)
-        self.all_params = list(layer.all_params)
-        self.all_drop = dict(layer.all_drop)
-        self.all_layers.extend([self.outputs])
-        self.all_params.extend(bn_vars)
-
-class BatchNormLayer(tl.layers.Layer):
-    def __init__(self,
-                 layer=None,
-                 decay=0.9,
-                 epsilon=0.00001,
-                 act=tf.identity,
-                 is_train=False,
-                 name='batchnorm_layer',
-                 ):
-        tl.layers.Layer.__init__(self, name=name)
-        self.inputs = layer.outputs
-
-        print("  [TL] Highway  %s: %s" % (self.name, act.__name__))
+        print("  [TL] BatchNormLayer  %s: %s" % (self.name, act.__name__))
         with tf.variable_scope(name) as scope:
             vars = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)
             batch_norm_params = {'is_training': is_train,
@@ -445,21 +438,24 @@ def get_left_right_center_pixel(args, restore=False, save=True):
     if not os.path.exists(center_pixel_dir):
         os.makedirs(center_pixel_dir)
     if restore:
-        filename = os.path.join(center_pixel_dir, 'c_pixel_label.json')
+        filename = os.path.join(center_pixel_dir, 'c_pixel_train.json')
         with open(filename, 'r') as f:
             tmp_dict = json.load(f)
-            xys = np.asarray(tmp_dict['xys'])
-            xyzs = np.asarray(tmp_dict['xyzs'])
-            labels = np.asarray(tmp_dict['labels'])
+            xys_train = np.asarray(tmp_dict['xys'])
+            xyzs_train = np.asarray(tmp_dict['xyzs'])
+        filename = os.path.join(center_pixel_dir, 'c_pixel_test.json')
+        with open(filename, 'r') as f:
+            tmp_dict = json.load(f)
+            xys_test = np.asarray(tmp_dict['xys'])
+            xyzs_test = np.asarray(tmp_dict['xyzs'])
     else:
         fetch_start_time = time.time()
         data_dir = os.path.join(os.path.join(args.train_dir, 'data'), 'raw_data')
         force_folders = [os.path.join(data_dir, folder) for folder in os.listdir(data_dir)
                          if os.path.isdir(os.path.join(data_dir, folder))]
-        num_frames = 27
+        num_frames = 58
         xys = np.empty((0, num_frames, 4)) # center pixel in left and right image
         xyzs = np.empty((0, num_frames, 3)) # cartesian coordinate of table tennis ball in the world
-        labels = np.empty((0, 3))
 
         example_total_num = 0
         for force_folder in force_folders:
@@ -475,20 +471,11 @@ def get_left_right_center_pixel(args, restore=False, save=True):
                              if os.path.isdir(os.path.join(force_folder, folder))]
             for trial_folder in trial_folders:
                 start = time.time()
-                tmp_label = np.zeros((1, 3))
                 tmp_center_pixels, tmp_coord = get_center_pixel(trial_folder, num_frames)
                 tmp_xy = np.asarray(tmp_center_pixels)
                 tmp_xyz = np.asarray(tmp_coord)
                 xys = np.concatenate((xys, np.expand_dims(tmp_xy, axis=0)), axis=0)
                 xyzs = np.concatenate((xyzs, np.expand_dims(tmp_xyz, axis=0)), axis=0)
-                label_dir = os.path.join(trial_folder, 'label')
-                label_file = os.path.join(label_dir, os.listdir(label_dir)[0])
-                with open(label_file, 'r') as f:
-                    data = json.load(f)
-                    tmp_label[0, 0] = data['xyz'][0]['x']
-                    tmp_label[0, 1] = data['xyz'][0]['y']
-                    tmp_label[0, 2] = data['xyz'][0]['z']
-                labels = np.concatenate((labels, tmp_label), axis=0)
 
                 example_processed += 1
                 end = time.time()
@@ -499,18 +486,28 @@ def get_left_right_center_pixel(args, restore=False, save=True):
                       ' total time elapsed %.2f s' %
                       (finished_percentage * 100.0, time_elapsed, total_time_elapsed))
         if save:
-            filename = os.path.join(center_pixel_dir, 'c_pixel_label.json')
-            with open(filename, 'w') as f:
+            from sklearn.model_selection import train_test_split
+            xys_train, xys_test, xyzs_train, xyzs_test = train_test_split(xys,
+                                                                          xyzs,
+                                                                          test_size=0.1,
+                                                                          random_state=args.random_seed)
+            filename = os.path.join(center_pixel_dir, 'c_pixel_train.json')
+            with open(filename, 'w+') as f:
                 tmp_dict = {}
-                tmp_dict['xys'] = xys.tolist()
-                tmp_dict['xyzs'] = xyzs.tolist()
-                tmp_dict['labels'] = labels.tolist()
+                tmp_dict['xys'] = xys_train.tolist()
+                tmp_dict['xyzs'] = xyzs_train.tolist()
+                json.dump(tmp_dict, f, indent=4)
+            filename = os.path.join(center_pixel_dir, 'c_pixel_test.json')
+            with open(filename, 'w+') as f:
+                tmp_dict = {}
+                tmp_dict['xys'] = xys_test.tolist()
+                tmp_dict['xyzs'] = xyzs_test.tolist()
                 json.dump(tmp_dict, f, indent=4)
         fetch_end_time = time.time()
         fetch_time_elapsed = fetch_end_time - fetch_start_time
         print("\nSummary: fetching center pixels take %.2f s" % fetch_time_elapsed)
     print("Loading center pixels done...")
-    return xys, xyzs, labels
+    return xys_train, xys_test, xyzs_train, xyzs_test
 
 
 def get_center_pixel(trial_folder, num_images):
@@ -666,7 +663,7 @@ def find_best_ckpt(args, model, X_train, y_train, X_test, y_test, restore=False)
         fileindex = int(fileindex_list[0])
         if fileindex <= min_index:
             min_index = fileindex
-    start = min_index
+    start = 16500#min_index
     if not restore:
         if os.path.exists(error_filename):
             os.remove(error_filename)

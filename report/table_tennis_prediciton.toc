@@ -1,0 +1,5 @@
+\beamer@endinputifotherversion {3.24pt}
+\select@language {english}
+\beamer@sectionintoc {1}{Background}{3}{0}{1}
+\beamer@sectionintoc {2}{Prediction Neural Network}{11}{0}{2}
+\beamer@sectionintoc {3}{Training Result}{17}{0}{3}

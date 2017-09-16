@@ -157,7 +157,7 @@ class Model_MF(Model):
         for idx in xrange(distances.shape[1]):
             time_distance = distances[:, idx]
             print('\nTime step %d Distances statistics:' % idx)
-            threshold = 0.015
+            threshold = 0.01
             percentage_thr = (time_distance <= threshold).sum() / float(time_distance.size) * 100.0
             percentage_double_thr = (time_distance <= 2 * threshold).sum() / float(time_distance.size) * 100.0
             percentage_triple_thr = (time_distance <= 3 * threshold).sum() / float(time_distance.size) * 100.0

@@ -1,5 +1,8 @@
 import numpy as np
 import rospy
+import json
+import cPickle
+import os
 from Model_SF import Model_SF
 from Model_MF import Model_MF
 from pingpang_control.srv import *
@@ -32,6 +35,22 @@ class TrainConditions(object):
     def run(self):
         self.func(args=self.args)
 
+    def _restore_train_test_data(self, args):
+        restore_dir = os.path.join(os.path.join(args.train_dir, 'data'), 'processed_data')
+        center_pixel_dir = os.path.join(restore_dir, 'c_pixel')
+        train_test_dir = os.path.join(center_pixel_dir, 'train_test')
+        filename = os.path.join(train_test_dir, 'c_pixel_train.cpickle')
+        with open(filename, 'r') as f:
+            tmp_dict = cPickle.load(f)
+            xys_train = np.asarray(tmp_dict['xys'])
+            xyzs_train = np.asarray(tmp_dict['xyzs'])
+        filename = os.path.join(train_test_dir, 'c_pixel_test.cpickle')
+        with open(filename, 'r') as f:
+            tmp_dict = cPickle.load(f)
+            xys_test = np.asarray(tmp_dict['xys'])
+            xyzs_test = np.asarray(tmp_dict['xyzs'])
+
+        return xys_train, xys_test, xyzs_train, xyzs_test
 
     def _toy_test(self, args):
         num_traj_train = 6000
@@ -122,11 +141,7 @@ class TrainConditions(object):
 
 
     def _center_pixel_input_train(self, args):
-        features, coords, labels = get_left_right_center_pixel(args, restore=True, save=True)
-        features_train, features_test, coords_train, coords_test = train_test_split(features,
-                                                                                    coords,
-                                                                                    test_size=0.1,
-                                                                                    random_state=args.random_seed)
+        features_train, features_test, coords_train, coords_test = self._restore_train_test_data(args)
         start_steps = [1, 2, 3]
         for idx, value in enumerate(start_steps):
             if idx == 0:
@@ -149,17 +164,18 @@ class TrainConditions(object):
             self.model.fit(X_train, y_train)
         else:
             train_num = X_test.shape[0]
-            find_best_ckpt(args,
-                           self.model,
-                           X_train[:train_num],
-                           y_train[:train_num],
-                           X_test,
-                           y_test,
-                           restore=False)
+            # find_best_ckpt(args,
+            #                self.model,
+            #                X_train[:train_num],
+            #                y_train[:train_num],
+            #                X_test,
+            #                y_test,
+            #                restore=False)
             self.model.restore_model()
         # model.predict(X_test)
         print("\nTraining data testing\n---------------------")
-        train_y_preds, _ = self.model.test(X_train, y_train, draw=False, name='Train')
+        train_y_preds, _ = self.model.test(X_train, y_train,
+                                           draw=False, name='Train')
         print("\nTesting data testing\n---------------------")
         test_y_preds, _ = self.model.test(X_test, y_test, draw=False, name='Test')
         draw_num = 1
@@ -176,13 +192,11 @@ class TrainConditions(object):
                      test_y_preds[coords_test.shape[0] * i + start: coords_test.shape[0] * i + start + draw_num]],
                     title='Test - start_step=%d' % start_steps[i], draw_now=draw_now, seq_length=args.seq_length, start=start_steps[i])
 
-
     def _center_pixel_input_multiframe_output(self, args):
-        features, coords, labels = get_left_right_center_pixel(args, restore=True, save=True)
-        features_train, features_test, coords_train, coords_test = train_test_split(features,
-                                                                                    coords,
-                                                                                    test_size=0.1,
-                                                                                    random_state=args.random_seed)
+        features_train, features_test, coords_train, coords_test = self._restore_train_test_data(args)
+        # train_a_min = np.argmin(coords_train[:, :, 2], axis=1)
+        # test_a_min = np.argmin(coords_test[:, :, 2], axis=1)
+
         start_steps = [1, 2, 3]
         for idx, value in enumerate(start_steps):
             if idx == 0:
@@ -217,10 +231,11 @@ class TrainConditions(object):
             self.model.restore_model()
         # model.predict(X_test)
         print("\nTraining data testing\n---------------------")
-        train_y_preds, _ = self.model.test(X_train, y_train, draw=False, name='Train')
+        train_y_preds, _ = self.model.test(X_train, y_train,
+                                           draw=False, name='Train')
         print("\nTesting data testing\n---------------------")
         test_y_preds, _ = self.model.test(X_test, y_test, draw=False, name='Test')
-        draw_num = 2
+        draw_num = 1
         start = np.random.randint(0, coords_test.shape[0] - draw_num)
         for i in xrange(len(start_steps)):
             plot_3d([coords_train[start:start + draw_num, :start_steps[i] + args.seq_length + args.predicted_step, :],

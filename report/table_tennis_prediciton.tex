@@ -1,0 +1,344 @@
+\documentclass{beamer}
+\usepackage[utf8]{inputenc}
+\usepackage{xcolor,colortbl}
+\usepackage{mathtools}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{color}
+\usepackage{graphicx}
+ \graphicspath{{./figures/}}
+\usepackage{subfig}
+\usepackage{float}
+\usepackage{tabu}
+\usepackage{bm}
+\usepackage[english]{babel}
+\usepackage{minted}
+\usepackage{mathrsfs}
+\usepackage[lined,boxed,commentsnumbered, ruled]{algorithm2e} 
+\usefonttheme[onlymath]{serif}
+\newcounter{saveenumi}
+\newcommand{\seti}{\setcounter{saveenumi}{\value{enumi}}}
+\newcommand{\conti}{\setcounter{enumi}{\value{saveenumi}}}
+\usepackage{caption}
+\newcommand{\source}[1]{\caption*{{\color{blue}Source :} {#1}} }
+\resetcounteronoverlays{saveenumi}
+\definecolor{LightCyan}{rgb}{0.88,1,1}
+
+\usepackage{hyperref}
+\hypersetup{
+	colorlinks=true,
+	linkcolor=blue,
+	filecolor=magenta,      
+	urlcolor=cyan,
+}
+%Full justify
+\renewcommand{\raggedright}{\leftskip=0pt \rightskip=0pt plus 0cm}
+\raggedright
+
+\title{Table Tennis Project Report}
+\author{Tao Chen\newline\href{mailto:chentao904@163.com}{chentao904@163.com}}
+
+
+
+\date{Apr 07, 2017}
+\subject{Table Tennis Project Report}
+
+\AtBeginSection[]
+{
+	\begin{frame}<beamer>{Outline}
+		\tableofcontents[currentsection]
+	\end{frame}
+}
+
+\setbeamertemplate{footline}[frame number]
+\begin{document}
+	\begin{frame}
+		\titlepage
+	\end{frame}
+	
+	
+	\begin{frame}{Outline}
+		\tableofcontents
+	\end{frame}
+    
+    
+	\section{Background}
+	
+	\begin{frame}{Mission Statement}
+	\begin{itemize}
+	\item {{\color{blue}Mission}: Given several {\color{magenta}initial dual-camera frames}, predict the table tennis {\color{magenta}ball's position} in future frames}
+	\item {In experiments:}
+	\begin{itemize}
+	\item {Camera sampling frequency: 30 Hz}
+	\item {Algorithm's input: 14 initial frames}
+	\item {Algorithm's output: ball's positions in 33th-38th frames}
+	\end{itemize}
+	\end{itemize}
+	\end{frame}
+	
+	\begin{frame}{Basics}{MDN}
+	\begin{itemize}
+	\item {Supervised learning $\rightarrow$ model a conditional distribution {\color{magenta} $p(\boldsymbol{t} | \boldsymbol{x})$}}
+	\item {{\color{blue} Unimodal distribution}:}
+	\begin{itemize}
+	\item {$p(\boldsymbol{t} | \boldsymbol{x})$ is often chosen to be {\color{red} Gaussian}}
+	\end{itemize}
+	\item {{\color{blue} Multimodal Distribution}:}
+	\begin{itemize}
+	\item {$p(\boldsymbol{t} | \boldsymbol{x})$ can be {\color{red} mixture density network (MDN)}}
+	\end{itemize}
+	\begin{figure}
+	\includegraphics[width=8cm]{mdn_toy.png}
+	\caption{Unimodal and Multimodal}
+	\source{\textit{Pattern Recognition and Machine Learning, Bishop, 2006}}
+	\end{figure}	
+	\end{itemize}
+	\end{frame}
+	
+	\begin{frame}{Basics}{MDN}
+	\begin{itemize}
+	\item {MDN Formulation:}
+	\begin{align*}
+	p(\boldsymbol{t}|\boldsymbol{x}) = \sum_{k=1}^{K}\pi_k(\boldsymbol{x})\mathcal{N}(\boldsymbol{t}|\mu_k(\boldsymbol{x}), \sigma^2_k(\boldsymbol{x}))
+	\end{align*}
+	s.t.
+	\begin{align*}
+	\sum_{k=1}^{K}\pi_k(\boldsymbol{x})&=1, \quad 0 \leq \pi_k(\boldsymbol{x}) \leq 1 \\
+	\sigma_k^2(\boldsymbol{x}) &\geq 0
+	\end{align*}
+	To satisfy the constraints:
+	\begin{align*}
+	\pi_k(\boldsymbol{x})=\frac{e^{a_k^\pi}}{\sum_{\ell=1}^{K}e^{a_\ell^\pi}}, \quad \sigma_k(\boldsymbol{x})=e^{a_k^\sigma}
+	\end{align*}
+	\end{itemize}
+	\end{frame}
+       
+	\begin{frame}{Basics}{MDN}
+	\begin{itemize}
+	\item {MDN Loss: {\color{magenta} Maximum Likelihood}}
+	\begin{align*}
+	E(\boldsymbol{w}) = -\sum_{n=1}^{N}\text{ln}\left\lbrace\sum_{k=1}^{K}\pi_k(\boldsymbol{x}_n, \boldsymbol{w})\mathcal{N}(\boldsymbol{t}_n|\mu_k(\boldsymbol{x}_n, \boldsymbol{w}), \sigma^2_k(\boldsymbol{x}_n, \boldsymbol{w}))\right\rbrace
+	\end{align*}
+	
+	\end{itemize}
+	\end{frame}
+	
+	
+	\begin{frame}{Basics}{Highway Networks}
+	\begin{itemize}
+	\item {Training deeper networks is not as straightforward as simply adding layers}
+	\item {{\color{magenta}Highway Networks} enables the optimization of networks with {\color{blue} virtually arbitrary depth}}
+	\item {{\color{magenta}Key}: \textbf{gating mechanism} (inspired by LSTM)}
+	\begin{align*}
+	\boldsymbol{y}=H(\boldsymbol{x}, \boldsymbol{W_H})\cdot T(\boldsymbol{x}, \boldsymbol{W_T}) + \boldsymbol{x}\cdot (1-T(\boldsymbol{x}, \boldsymbol{W_T}))
+	\end{align*}
+	where $H$ can be an affine transform followed by a non-linear activation function  and:
+	\begin{align*}
+	T(\boldsymbol{x}) = \sigma(\boldsymbol{W_T}^T\boldsymbol{x}+\boldsymbol{b_T})
+	\end{align*}
+	\end{itemize}
+	\end{frame}
+	
+	\begin{frame}{Basics}{Highway Networks}
+	\begin{figure}
+	\includegraphics[width=6cm]{highway.pdf}
+	\end{figure}
+	\end{frame}
+	
+	\begin{frame}{Basics}{LSTM}
+	\begin{figure}
+	\includegraphics[width=11cm]{LSTM.png}
+	\caption{LSTM}
+	\source{http://colah.github.io/posts/2015-08-Understanding-LSTMs/}
+	\end{figure}
+	\end{frame}
+	
+	\section{Prediction Neural Network}
+	
+	\begin{frame}{Function}
+	\begin{itemize}
+	\item {\textbf{Two} similar neural networks were designed and trained}
+	\item {One is to predict the ball's position in a {\color{magenta}single} future frame}
+	\item {The other one is to predict the ball's positions in {\color{magenta}multiple} future frames simultaneously}
+	\end{itemize}
+	\end{frame}
+	
+	\begin{frame}{Prediction Neural Network}{Single Frame Prediction}
+	\begin{minipage}{6cm}
+	\begin{itemize}
+	\item {{\color{magenta}Single} future frame prediction}
+	\item {{\color{blue}Input}: 14 initial frame data }
+	\item {{\color{blue}Output}: ball's position distribution in 38th frame}
+	\end{itemize}
+	\end{minipage}
+	\begin{minipage}{5cm}
+	\begin{figure}
+	\includegraphics[width=3.8cm]{s_nn.pdf}
+	\end{figure}
+	\end{minipage}
+	\end{frame}
+	
+	\begin{frame}{Training Process}{Single Frame Prediction}
+	\begin{minipage}{5.5cm}
+	\begin{figure}
+	\includegraphics[width=5cm]{s_train_loss.png}
+	\caption{Training Loss}
+	\end{figure}
+	\end{minipage}
+	\begin{minipage}{5.5cm}
+	\begin{figure}
+	\includegraphics[width=5cm]{s_eval_loss.png}
+	\caption{Evaluation Loss}
+	\end{figure}
+	\end{minipage}
+	\end{frame}
+
+	\begin{frame}{Prediction Neural Network}{Multiple Frame Predictions}
+	\begin{minipage}{6cm}
+	\begin{itemize}
+	\item {{\color{magenta}Multiple} future frame predictions}
+	\item {{\color{blue}Input}: 14 initial frame data }
+	\item {{\color{blue}Output}: ball's position distributions in 33th-38th frames}
+	\end{itemize}
+	\end{minipage}
+	\begin{minipage}{5cm}
+	\begin{figure}
+	\includegraphics[width=4.4cm]{m_nn.pdf}
+	\end{figure}
+	\end{minipage}
+	\end{frame}
+	
+	\begin{frame}{Training Process}{Multiple Frame Predictions}
+	\begin{minipage}{5.5cm}
+	\begin{figure}
+	\includegraphics[width=5cm]{m_train_loss.png}
+	\caption{Training Loss}
+	\end{figure}
+	\end{minipage}
+	\begin{minipage}{5.5cm}
+	\begin{figure}
+	\includegraphics[width=5cm]{m_eval_loss.png}
+	\caption{Evaluation Loss}
+	\end{figure}
+	\end{minipage}
+	\end{frame}
+	
+	\section{Training Result}
+	
+	\begin{frame}{How to Measure}
+	\begin{itemize}
+	\item {To get an appropriate {\color{magenta}threshold value} of the distance between true position and predicted position, the {\color{magenta}training data distribution} should be considered}
+	\end{itemize}	
+	\end{frame}
+	
+	\begin{frame}{Training Data Distribution}
+	\begin{itemize}
+	\item {As the Gazebo model is not perfect yet, the table tennis ball {\color{blue}cannot repeat its trajectory with high accuracy} even under same force condition}
+	\item {When collecting the training and testing data, each force condition is applied to the ball {\color{magenta}50} times (get 50 similar trajectories)}
+	\item {The degree of repeatability of each 50 trajectories is measured by the {\color{magenta}average distance from each trajectory to the median trajectory at each time step}}
+	\item {\textbf{480} force conditions were applied and collected, resulting in \textbf{24000} trajectories}
+	\end{itemize}
+	\end{frame}
+	
+	\begin{frame}{Training Data Distribution}
+	\begin{figure}
+	\subfloat[33th frame]{\includegraphics[width = 3.5cm]{33th_frame.png}}
+	\subfloat[34th frame]{\includegraphics[width = 3.5cm]{34th_frame.png}}
+	\subfloat[35th frame]{\includegraphics[width = 3.5cm]{35th_frame.png}} \\
+	\subfloat[36th frame]{\includegraphics[width = 3.5cm]{36th_frame.png}}
+	\subfloat[37th frame]{\includegraphics[width = 3.5cm]{37th_frame.png}}
+	\subfloat[38th frame]{\includegraphics[width = 3.5cm]{38th_frame.png}}
+	\caption{Violin-plots of Average Distance to {\color{magenta}Median} Trajectory}
+	\end{figure}
+	\end{frame}
+	
+	\begin{frame}{Training Result}
+	\begin{itemize}
+	\item {Most trajectories from the training data are close to each other by the upper bound: $1.5 \text{ cm} \times 2 = 3 \text{ cm}$}
+	\item {Single Frame Prediction}
+	\begin{center}
+	\begin{tabular}{ c c c c }
+	\hline 
+	\rowcolor{LightCyan}
+	Data Source & 1 cm error & 2 cm error & 3 cm error \\
+	\hline \\[-1em]
+	Training & 58.94 \% & 85.05 \% & 93.11 \% \\ \\[-1em]
+	Testing & 57.22 \% & 82.62 \% & 91.17 \% \\ \\[-1em]
+	\hline
+	\end{tabular}
+	\end{center}
+	\end{itemize}
+	\end{frame}
+
+	\begin{frame}{Training Result}
+	\begin{itemize}
+	\item {Multiple Frame Prediction \\	{\color{blue}Training Data}:}
+	\begin{center}
+	\begin{tabular}{ c c c c }
+	\hline
+	\rowcolor{LightCyan}
+	Data Source & 1 cm error & 2 cm error & 3 cm error \\
+	\hline \\[-1em]
+	33th frame & 69.15 \% & 89.86 \% & 97.04 \% \\ \\[-1em]
+	34th frame & 65.62 \% & 89.11 \% & 96.95 \% \\ \\[-1em]
+	35th frame & 65.05 \% & 88.09 \% & 96.01 \% \\ \\[-1em]
+	36th frame & 63.00 \% & 86.77 \% & 95.24 \% \\ \\[-1em]
+	37th frame & 62.07 \% & 86.23 \% & 94.73 \% \\ \\[-1em]
+	38th frame & 56.97 \% & 84.46 \% & 94.33 \% \\ \\[-1em]
+	\hline
+	\end{tabular}
+	\end{center}
+	\end{itemize}
+	\end{frame}	 
+	
+	\begin{frame}{Training Result}
+	\begin{itemize}
+	\item {Multiple Frame Prediction \\	{\color{blue}Testing Data}:}
+	\begin{center}
+	\begin{tabular}{ c c c c }
+	\hline
+	\rowcolor{LightCyan}
+	Data Source & 1 cm error & 2 cm error & 3 cm error \\
+	\hline \\[-1em]
+	33th frame & 68.72 \% & 89.21 \% & 96.33 \% \\ \\[-1em]
+	34th frame & 65.21 \% & 87.85 \% & 96.33 \% \\ \\[-1em]
+	35th frame & 64.35 \% & 87.36 \% & 95.64 \% \\ \\[-1em]
+	36th frame & 61.85 \% & 86.14 \% & 94.64 \% \\ \\[-1em]
+	37th frame & 60.36 \% & 85.56 \% & 94.32 \% \\ \\[-1em]
+	38th frame & 56.74 \% & 83.32 \% & 93.57 \% \\ \\[-1em]
+	\hline
+	\end{tabular}
+	\end{center}
+	\end{itemize}
+	\end{frame}   
+	
+	\begin{frame}{Training Result}{Single Frame Prediction}
+	\begin{minipage}{5.5cm}
+	\begin{figure}
+	\includegraphics[width=5cm]{test_single_1.png}
+    \caption{Offline Testing Data Test}
+	\end{figure}
+	\end{minipage}
+	\begin{minipage}{5.5cm}
+	\begin{figure}
+	\includegraphics[width=5cm]{s_real_time_test.png}
+	\caption{Gazebo Real-time Test}
+	\end{figure}
+	\end{minipage}	
+	\end{frame}
+	
+	\begin{frame}{Training Result}{Multiple Frame Predictions}
+	\begin{minipage}{5.5cm}
+	\begin{figure}
+	\includegraphics[width=5cm]{test_multi_1.png}
+	\caption{Offline Testing Data Test}
+	\end{figure}
+	\end{minipage}
+	\begin{minipage}{5.5cm}
+	\begin{figure}
+	\includegraphics[width=5cm]{m_real_time_test.png}
+	\caption{Gazebo Real-time Test}
+	\end{figure}
+	\end{minipage}	
+	\end{frame}
+\end{document}
