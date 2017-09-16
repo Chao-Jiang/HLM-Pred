@@ -6,7 +6,6 @@ Implementation of **Highway network + LSTM + MDN** to perform prediction of flyi
 
 A brief report can be found in `report/table_tennis_prediciton.pdf`
 
-=======
 Please refer to [this branch](https://github.com/taochenshh/HLM-Pred/tree/better_gazebo_model) to see the **detailed neural network structure**
 
 
